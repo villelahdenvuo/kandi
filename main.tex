@@ -45,6 +45,24 @@
 \usepackage[fixlanguage]{babelbib}
 \selectbiblanguage{finnish}
 
+% Babelbib doesn't support finnish ordinals for example edition = 6 -> kuudes painos.
+\declarebtxcommands{finnish}{
+  \def\btxnumeralshort#1{
+    #1.}
+  \def\btxnumerallong#1{
+    \ifnumber{#1}{
+      \ifcase#1 nollas\or ensimmäinen\or toinen\or kolmas\or neljäs\or viides\or
+        kuudes\or seitsemäs\or kahdeksas\or yhdeksäs\or kymmenes\else
+        #1.
+      \fi
+    }{#1}}
+}
+
+% Remove [brackets] around keys.
+\makeatletter
+\renewcommand\@biblabel[1]{\hfill #1}
+\makeatother
+
 % add bibliography to the table of contents
 \usepackage[nottoc]{tocbibind}
 % tocbibind renames the bibliography, use the following to change it back
@@ -74,7 +92,8 @@
 \title{JavaScript \& virtuaalikoneet}
 \author{Ville Lahdenvuo}
 \date{\today}
-\level{Kandidaatintutkielma}
+\level{Referaatti}
+%\level{Kandidaatintutkielma}
 \abstract{Tiivistelmä.}
 
 % The following can be used to specify keywords and classification of the paper:
@@ -106,7 +125,6 @@
 % \city{Helsinki}
 %
 
-
 \begin{document}
 
 % --- Front matter ---
@@ -114,22 +132,19 @@
 \frontmatter      % roman page numbering for front matter
 
 \maketitle        % title page
-\makeabstract     % abstract page
+%\makeabstract     % abstract page
 
-\tableofcontents  % table of contents
+%\tableofcontents  % table of contents
 
 % --- Main matter ---
 
 \mainmatter       % clear page, start arabic page numbering
 
-\input{01-johdanto}
+% Set bigger space between lines.
+\renewcommand{\baselinestretch}{1.5}
+\selectfont
 
-\section{Esimerkkiluku}
-
-% Write some science here.
-
-Jotain ihan muuta~\cite{esimerkki}.
-
+\input{00-referaatti}
 
 % --- References ---
 %
@@ -141,8 +156,8 @@ Jotain ihan muuta~\cite{esimerkki}.
 %
 % instead.
 
-\bibliographystyle{babplain-lf}
-%\bibliographystyle{babalpha-lf}
+%\bibliographystyle{babplain-lf}
+\bibliographystyle{babalpha-lf}
 \bibliography{references}
 
 
