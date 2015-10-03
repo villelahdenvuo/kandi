@@ -1,1 +1,31 @@
 \section{Virtuaalikoneiden toiminta}
+
+Virtuaalikone on sovellus, tarjoaa todellisen tai hypoteettisen koneen toiminnallisuuksia ohjelmille, riippumatta laitteesta, jossa virtuaalikonetta suoritetaan. Niitä on kahdenlaisia, \textit{järjestelmä-} ja \textit{prosessivirtuaalikoneita}~\cite[s.~33]{vms}. Näiden erona on, että järjestelmävirtuaalikone tarjoaa kokonaisen käyttöjärjestelmän palvelut, kun taas prosessivirtuaalikone toteuttaa vaan yhden prosessin suorittamista varten tarvittavat rajapinnat.
+
+Tässä tutkielmassa virtuaalikoneella tarkoitetaan ohjelmointikieliä suorittavia virtuaalikoneita, jotka ovat prosessivirtuaalikoneita. Niitä käytetään, koska abstrahoimalla fyysisen laitteen ominaisuuksia saavutetaan sen avulla toimiviin sovelluksiin helpommin alustariippumattomuus. Riittää tehdä virtuaalikoneesta alustariippumaton, jonka jälkeen kaikki sen avulla toimivat sovellukset ovat alustariippumattomia, sillä niille riittää, että virtuaalikone toteuttaa samat toiminnallisuudet.
+
+Virtuaalikonemalli parantaa myös tietoturvaa, sillä siinä suoritettava ohjelma pääsee käsiksi vain virtuaalikoneen tarjoamiin rajapintoihin. Tämä tarkoittaa, että pahaa tarkoittava ohjelma on eristetty todellisesta käyttöjärjestelmästä ja laitteistosta~\cite[s.~36]{vms}.
+
+\subsection{Esimerkki: SpiderMonkey}
+
+Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995 ja nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey koostuu kolmesta pääkomponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
+
+Kääntäjä huolehtii JavaScript koodin jäsentämisestä (parsing) ja kääntämisestä \textit{tavukoodiksi}. Tavukoodi on eräänlainen \textit{välikieli} (intermediate language), jota virtuaalikoneen on helpompi käsitellä kuin tekstimuotoista ohjelmakoodia.
+
+Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} tai lyhyemmin \textit{JIT-kääntäjällä} (Just-In-Time compiler).
+
+Roskienkerääjän tehtävä on yksinkertaisesti poistaa muistista muuttujat ja oliot, joihin ei ole enää viittauksia ohjelmassa. Roskienkerääjän ansiosta ohjelmoijan ei tarvitse muistaa vapauttaa muistia itse, vaan järjestelmä hoitaa muistinhallinnan automaattisesti.
+
+\subsection{Esimerkki: V8}
+
+Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus olla nopeampi kuin mikään silloinen selain~[lähde]. Googlen kiinnostus nopeuteen on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät nopeudesta. Suorituskykysyistä Google päätyikin toteuttamaan oman JavaScript-virtuaalikoneen V8:n.
+
+Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. V8 kääntää JavaScript koodin suoraan konekoodiksi ennen suorittamista. Tätä kutsutaan \textit{ennaltakääntämiseksi} tai \textit{AOT-kääntämiseksi} (Ahead-Of-Time compilation). SpiderMonkeyn tapaan se kerää tyyppitietoa suorituksen aikana ja käyttää optimoivaa JIT-kääntäjää suorituskyvyn parantamiseksi~[lähde].
+
+V8:ssa on luonnollisesti myös roskienkerääjä.
+
+\subsection{JavaScriptin tuomat haasteet}
+
+\begin{itemize}
+\item JS:n tuomat ongelmat verrattuna esim. Javaan.
+\end{itemize}
