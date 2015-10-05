@@ -10,22 +10,28 @@ Virtuaalikonemalli parantaa myös tietoturvaa, sillä siinä suoritettava ohjelm
 
 Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995 ja nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey koostuu kolmesta pääkomponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
 
-Kääntäjä huolehtii JavaScript koodin jäsentämisestä (parsing) ja kääntämisestä \textit{tavukoodiksi}. Tavukoodi on eräänlainen \textit{välikieli} (intermediate language), jota virtuaalikoneen on helpompi käsitellä kuin tekstimuotoista ohjelmakoodia.
+Kääntäjä huolehtii JavaScript koodin \textit{jäsentämisestä} (parsing) ja kääntämisestä \textit{tavukoodiksi}. Tavukoodi on eräänlainen \textit{välikieli} (intermediate language), jota virtuaalikoneen on helpompi käsitellä kuin tekstimuotoista ohjelmakoodia.
 
-Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} tai lyhyemmin \textit{JIT-kääntäjällä} (Just-In-Time compiler).
+Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} tai lyhyemmin \textit{JIT-kääntäjällä} (Just-In-Time compiler)~[lähde?].
 
-Roskienkerääjän tehtävä on yksinkertaisesti poistaa muistista muuttujat ja oliot, joihin ei ole enää viittauksia ohjelmassa. Roskienkerääjän ansiosta ohjelmoijan ei tarvitse muistaa vapauttaa muistia itse, vaan järjestelmä hoitaa muistinhallinnan automaattisesti.
+Roskienkerääjän tehtävä on yksinkertaisesti poistaa muistista muuttujat ja oliot, joihin ohjelmassa ei enää viitata. Roskienkerääjän ansiosta ohjelmoijan ei tarvitse vapauttaa muistia itse, vaan järjestelmä hoitaa muistinhallinnan automaattisesti. Automaattinen muistinhallinta vähentää virheiden määrää, kuten muistivuotoja, mutta ei poista kaikkia ongelmia~[lähde?].
 
 \subsection{Esimerkki: V8}
 
-Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus olla nopeampi kuin mikään silloinen selain~[lähde]. Googlen kiinnostus nopeuteen on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät nopeudesta. Suorituskykysyistä Google päätyikin toteuttamaan oman JavaScript-virtuaalikoneen V8:n.
+Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus parantaa verkkosovellusten käyttökokemusta~\cite{chromepress}. Googlen kiinnostus käyttökokemuksen parantamisesta on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät hyvästä suorituskyvystä. Näistä syistä Google päätyi toteuttamaan oman JavaScript-virtuaalikoneen V8:n.
 
-Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. V8 kääntää JavaScript koodin suoraan konekoodiksi ennen suorittamista. Tätä kutsutaan \textit{ennaltakääntämiseksi} tai \textit{AOT-kääntämiseksi} (Ahead-Of-Time compilation). SpiderMonkeyn tapaan se kerää tyyppitietoa suorituksen aikana ja käyttää optimoivaa JIT-kääntäjää suorituskyvyn parantamiseksi~[lähde].
+Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. Sen sijaan V8 kääntää JavaScript koodin suoraan konekoodiksi ennen suorittamista. SpiderMonkeyn tapaan se kerää tyyppitietoa suorituksen aikana ja käyttää optimoivaa JIT-kääntäjää suorituskyvyn parantamiseksi~\cite{v8compilers}.
 
-V8:ssa on luonnollisesti myös roskienkerääjä.
+%V8:ssa on luonnollisesti myös roskienkerääjä, sillä kielen standardiin kuuluu automaattinen muistinhallinta. Muistinhallinnasta kerrotaan lisää sen suorituskykyä käsittelevässä kappaleessa.
+
+\subsection{Esimerkki: JavaScriptCore}
+
+JavaScriptCore on WebKit-nimisen Web-teknologioita toteuttavan ohjelmistokomponentin JavaScript-virtuaalikone. Apple käyttää WebKitiä ja \mbox{JavaScriptCorea} Safari-selaimessaan.
+
+JavaScriptCore koostuu tulkista, yksinkertaisesta JIT-kääntäjästä sekä Googlen V8:n innoittamana optimoivasta JIT-kääntäjästä, jota he kutsuvat nimellä DFG-JIT. DFG tulee sanoista \textit{Data Flow Graph}, joka kuvaa ohjelman suorituksenaikaisen tyyppitiedon tallentavaa tietorakennetta. Eli kuten aikaisempien esimerkkien kohdalla, virtuaalikone ensin kerää tyyppitietoa ja sitten generoi optimoitua konekoodia~\cite{javascriptcore}.
 
 \subsection{JavaScriptin tuomat haasteet}
 
-\begin{itemize}
-\item JS:n tuomat ongelmat verrattuna esim. Javaan.
-\end{itemize}
+Kuten aikaisemmista esimerkeistä käy ilmi, virtuaalikoneet eivät voi suoraan generoida optimoitua konekoodia JavaScript-ohjelmista, sillä ei ole tietoa muuttujien tyypeistä. Prosessorin kannalta on hyvin tärkeää tietää tehdäänkö jokin operaatio kokonaisluvuille, liukuluvuille vai kenties merkkijonoille.
+
+Automaattinen roskienkeruu on todella kätevä toiminnallisuus ohjelmoijan kannalta, mutta sen toteuttaminen hyvin on haastavaa. Ohjelman on pysähdyttävä ja käytävä läpi muistin sisältöä ja vapauttaa muistialueita, jotka eivät ole enää käytössä. Selaimen tapauksessa tämä voi aiheuttaa verkkosovelluksen hidastumista ja huonontaa käyttökokemusta, varsinkin jos kyseessä on interaktiivinen toiminto tai animaatio.
