@@ -1,18 +1,18 @@
 \section{Virtuaalikoneiden toiminta}
 
-Virtuaalikone on sovellus, tarjoaa todellisen tai hypoteettisen koneen toiminnallisuuksia ohjelmille, riippumatta laitteesta, jossa virtuaalikonetta suoritetaan. Niitä on kahdenlaisia, \textit{järjestelmä-} ja \textit{prosessivirtuaalikoneita}~\cite[s.~33]{vms}. Näiden erona on, että järjestelmävirtuaalikone tarjoaa kokonaisen käyttöjärjestelmän palvelut, kun taas prosessivirtuaalikone toteuttaa vaan yhden prosessin suorittamista varten tarvittavat rajapinnat.
+Virtuaalikone on ohjelma, joka tarjoaa todellisen tai hypoteettisen laitteen toiminnallisuuksia muille ohjelmille hyödyntäen sitä suorittavan \textit{isäntäjärjestelmän} abstraktioita. Virtuaalikone voi esimerkiksi virtualisoida optista asemaa käyttämällä isännän tiedostojärjestelmää hyväksi, jolloin virtuaalikoneessa suoritettava ohjelma luulee lukevansa optista levyä, kun todellisuudessa tieto tulee kiintolevyltä. Virtuaalikoneita on kahdenlaisia, \textit{järjestelmä-} ja \textit{prosessivirtuaalikoneita}~\cite[s.~33]{vms}. Järjestelmävirtuaalikone tarjoaa kokonaisen käyttöjärjestelmän palvelut toisin kuin prosessivirtuaalikone, joka tarjoaa vaan yhden prosessin suorittamista varten tarvittavat palvelut.
 
-Tässä tutkielmassa virtuaalikoneella tarkoitetaan ohjelmointikieliä suorittavia virtuaalikoneita, jotka ovat prosessivirtuaalikoneita. Niitä käytetään, koska abstrahoimalla fyysisen laitteen ominaisuuksia saavutetaan sen avulla toimiviin sovelluksiin helpommin alustariippumattomuus. Riittää tehdä virtuaalikoneesta alustariippumaton, jonka jälkeen kaikki sen avulla toimivat sovellukset ovat alustariippumattomia, sillä niille riittää, että virtuaalikone toteuttaa samat toiminnallisuudet.
+\subsection{Virtuaalikoneen anatomia}
 
-Virtuaalikonemalli parantaa myös tietoturvaa, sillä siinä suoritettava ohjelma pääsee käsiksi vain virtuaalikoneen tarjoamiin rajapintoihin. Tämä tarkoittaa, että pahaa tarkoittava ohjelma on eristetty todellisesta käyttöjärjestelmästä ja laitteistosta~\cite[s.~36]{vms}.
+Tässä tutkielmassa virtuaalikoneella tarkoitetaan korkean tason ohjelmointikielellä toteutetun ohjelman suorittavaa virtuaalikonetta. Tällaiset virtuaalikoneet ovat prosessivirtuaalikoneita. Ohjelma riittää kääntää virtuaalikoneelle, jolloin se toimii kaikilla alustoilla, joille kyseinen virtuaalikone on toteutettu.
 
-\subsection{Esimerkki: SpiderMonkey}
+Virtuaalikonemalli parantaa myös tietoturvaa. Virtuaalikoneessa suoritettava ohjelma pääsee käsiksi vain virtuaalikoneen tarjoamiin palveluihin, jolloin ohjelmat on helpompi eristää käyttöjärjestelmästä ja laitteistosta~\cite[s.~36]{vms}. Pahan tahtoisen ohjelman on siis löydettävä haavoittuvuus sekä virtuaalikoneesta että sen isännästä.
 
-Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995 ja nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey koostuu kolmesta pääkomponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
+Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995 ja nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey koostuu kolmesta fundamentaalisesta komponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
 
-Kääntäjä huolehtii JavaScript koodin \textit{jäsentämisestä} (parsing) ja kääntämisestä \textit{tavukoodiksi}. Tavukoodi on eräänlainen \textit{välikieli} (intermediate language), jota virtuaalikoneen on helpompi käsitellä kuin tekstimuotoista ohjelmakoodia.
+Kääntäjä huolehtii koodin \textit{jäsentämisestä} (parsing) ja kääntämisestä \textit{tavukoodiksi}. Virtuaalikoneen tavukoodi on verrattavissa todellisen koneen konekoodiin. Sitä on helpompi käsitellä ohjelmallisesti kuin tekstimuotoista ohjelmakoodia, sillä se on yksinkertaisempaa syntaksiltaan, joskin runsassanaisempaa.
 
-Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} tai lyhyemmin \textit{JIT-kääntäjällä} (Just-In-Time compiler)~[lähde?].
+Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} eli \textit{JIT-kääntäjällä} (Just-In-Time compiler)~[lähde?].
 
 Roskienkerääjän tehtävä on yksinkertaisesti poistaa muistista muuttujat ja oliot, joihin ohjelmassa ei enää viitata. Roskienkerääjän ansiosta ohjelmoijan ei tarvitse vapauttaa muistia itse, vaan järjestelmä hoitaa muistinhallinnan automaattisesti. Automaattinen muistinhallinta vähentää virheiden määrää, kuten muistivuotoja, mutta ei poista kaikkia ongelmia~[lähde?].
 
@@ -29,6 +29,10 @@ Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. Sen sija
 JavaScriptCore on WebKit-nimisen Web-teknologioita toteuttavan ohjelmistokomponentin JavaScript-virtuaalikone. Apple käyttää WebKitiä ja \mbox{JavaScriptCorea} Safari-selaimessaan.
 
 JavaScriptCore koostuu tulkista, yksinkertaisesta JIT-kääntäjästä sekä Googlen V8:n innoittamana optimoivasta JIT-kääntäjästä, jota he kutsuvat nimellä DFG-JIT. DFG tulee sanoista \textit{Data Flow Graph}, joka kuvaa ohjelman suorituksenaikaisen tyyppitiedon tallentavaa tietorakennetta. Eli kuten aikaisempien esimerkkien kohdalla, virtuaalikone ensin kerää tyyppitietoa ja sitten generoi optimoitua konekoodia~\cite{javascriptcore}.
+
+\subsection{Esimerkki: Chakra}
+
+Tekstiä tähän...
 
 \subsection{JavaScriptin tuomat haasteet}
 
