@@ -1,41 +1,46 @@
 \section{Virtuaalikoneiden toiminta}
 
-Virtuaalikone on ohjelma, joka tarjoaa todellisen tai hypoteettisen laitteen toiminnallisuuksia muille ohjelmille hyödyntäen sitä suorittavan \textit{isäntäjärjestelmän} abstraktioita. Virtuaalikone voi esimerkiksi virtualisoida optista asemaa käyttämällä isännän tiedostojärjestelmää hyväksi, jolloin virtuaalikoneessa suoritettava ohjelma luulee lukevansa optista levyä, kun todellisuudessa tieto tulee kiintolevyltä. Virtuaalikoneita on kahdenlaisia, \textit{järjestelmä-} ja \textit{prosessivirtuaalikoneita}~\cite[s.~33]{vms}. Järjestelmävirtuaalikone tarjoaa kokonaisen käyttöjärjestelmän palvelut toisin kuin prosessivirtuaalikone, joka tarjoaa vaan yhden prosessin suorittamista varten tarvittavat palvelut.
+Virtuaalikone on ohjelma, joka tarjoaa todellisen tai hypoteettisen laitteen toiminnallisuuksia muille ohjelmille hyödyntäen sitä suorittavan \textit{isäntäjärjestelmän} abstraktioita. Virtuaalikone voi esimerkiksi virtualisoida optista asemaa käyttämällä isännän tiedostojärjestelmää hyväksi, jolloin virtuaalikoneessa suoritettava ohjelma luulee esimerkiksi lukevansa optista levyä, kun todellisuudessa tieto tulee kiintolevyltä.
 
-\subsection{Virtuaalikoneen anatomia}
+\subsection{Kahdenlaisia virtuaalikoneita}
 
-Tässä tutkielmassa virtuaalikoneella tarkoitetaan korkean tason ohjelmointikielellä toteutetun ohjelman suorittavaa virtuaalikonetta. Tällaiset virtuaalikoneet ovat prosessivirtuaalikoneita. Ohjelma riittää kääntää virtuaalikoneelle, jolloin se toimii kaikilla alustoilla, joille kyseinen virtuaalikone on toteutettu.
+Virtuaalikoneita on kahdenlaisia, \textit{järjestelmä-} ja \textit{prosessivirtuaalikoneita}~\cite[s.~33]{vms}. Järjestelmävirtuaalikone tarjoaa kokonaisen käyttöjärjestelmän palvelut toisin kuin prosessivirtuaalikone, joka tarjoaa vaan yhden prosessin suorittamista varten tarvittavat palvelut. Tässä tutkielmassa virtuaalikoneella tarkoitetaan JavaScriptillä toteutettuja ohjelmia suorittavaa prosessivirtuaalikonetta.
 
-Virtuaalikonemalli parantaa myös tietoturvaa. Virtuaalikoneessa suoritettava ohjelma pääsee käsiksi vain virtuaalikoneen tarjoamiin palveluihin, jolloin ohjelmat on helpompi eristää käyttöjärjestelmästä ja laitteistosta~\cite[s.~36]{vms}. Pahan tahtoisen ohjelman on siis löydettävä haavoittuvuus sekä virtuaalikoneesta että sen isännästä.
+Yksi suurimmista virtuaalikoneiden höydyistä on se, että ohjelma tarvitsee kääntää usean alustan sijaan yhdelle virtuaalikoneelle, jolloin se toimii kaikilla niillä alustoilla, joille kyseinen virtuaalikone on toteutettu. Virtuaalikoneessa suoritettava ohjelma pääsee käsiksi vain virtuaalikoneen tarjoamiin palveluihin, jolloin ohjelmat on helpompi eristää käyttöjärjestelmästä ja laitteistosta~\cite[s.~36]{vms}. Pahantahtoisen ohjelman on siis löydettävä haavoittuvuus sekä virtuaalikoneesta että sen isännästä.
 
-Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995 ja nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey koostuu kolmesta fundamentaalisesta komponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
+\subsection{JavaScript-virtuaalikoneen anatomia}
+
+Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995. Nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey on kehittynyt paljon, mutta silti se koostuu kolmesta fundamentaalisesta komponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}.
 
 Kääntäjä huolehtii koodin \textit{jäsentämisestä} (parsing) ja kääntämisestä \textit{tavukoodiksi}. Virtuaalikoneen tavukoodi on verrattavissa todellisen koneen konekoodiin. Sitä on helpompi käsitellä ohjelmallisesti kuin tekstimuotoista ohjelmakoodia, sillä se on yksinkertaisempaa syntaksiltaan, joskin runsassanaisempaa.
 
-Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja tekee tarvittavat toiminnot, jotka riippuvat alustasta. Tulkista on siis oltava oma versionsa jokaista tuettua alustaa varten. Todellisuudessa tulkkia käytetään vain suorituksen alkuvaiheessa keräämään tyyppitietoa. Usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi \textit{suorituksenaikaisella kääntäjällä} eli \textit{JIT-kääntäjällä} (Just-In-Time compiler)~[lähde?].
+Tulkin tehtävä on suorittaa tavukoodia. Tulkki siis lukee tavukoodia ja kutsuu tarvittavia käskyjä isäntäjärjestelmässä. Tulkista on siis oltava oma versionsa jokaista erilaista alustaa varten. Yksi tulkin eduista on, että se on joustavampi kuin todellinen prosessori ja siihen voi toteuttaa monimutkaisempia tavukoodikäskyjä.
 
 Roskienkerääjän tehtävä on yksinkertaisesti poistaa muistista muuttujat ja oliot, joihin ohjelmassa ei enää viitata. Roskienkerääjän ansiosta ohjelmoijan ei tarvitse vapauttaa muistia itse, vaan järjestelmä hoitaa muistinhallinnan automaattisesti. Automaattinen muistinhallinta vähentää virheiden määrää, kuten muistivuotoja, mutta ei poista kaikkia ongelmia~[lähde?].
 
-\subsection{Esimerkki: V8}
+\subsection{Suorituksenaikainen kääntäminen}
 
-Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus parantaa verkkosovellusten käyttökokemusta~\cite{chromepress}. Googlen kiinnostus käyttökokemuksen parantamisesta on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät hyvästä suorituskyvystä. Näistä syistä Google päätyi toteuttamaan oman JavaScript-virtuaalikoneen V8:n.
+Valitettavasti tulkit ovat hitaita, tai ainakin hitaampia kuin haluttaisiin. Riippumatta toteutustavasta, tulkki joutuu aina tekemään useita konekäskyjä yhden tavukoodikäskyn suorittamiseksi~\cite[s.~35]{vms}
 
-Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. Sen sijaan V8 kääntää JavaScript koodin suoraan konekoodiksi ennen suorittamista. SpiderMonkeyn tapaan se kerää tyyppitietoa suorituksen aikana ja käyttää optimoivaa JIT-kääntäjää suorituskyvyn parantamiseksi~\cite{v8compilers}.
+Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus parantaa verkkosovellusten käyttökokemusta~\cite{chromepress}. Googlen kiinnostus käyttökokemuksen ja ennen kaikkea suorituskyvyn parantamisesta on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät hyvästä suorituskyvystä. Näistä syistä Google päätyi toteuttamaan oman virtuaalikoneen V8:n.
 
-%V8:ssa on luonnollisesti myös roskienkerääjä, sillä kielen standardiin kuuluu automaattinen muistinhallinta. Muistinhallinnasta kerrotaan lisää sen suorituskykyä käsittelevässä kappaleessa.
+Mielenkiintoisen V8:sta tekee se, että siinä ei ole lainkaan tulkkia. Sen sijaan V8 kääntää koodin nopeasti suoraan konekoodiksi ennen suorittamista. Nopean kääntämisen saavuttamiseksi, se ei tee monimutkaisia optimointeja vielä ensimmäisessä käännösvaiheessa.
 
-\subsection{Esimerkki: JavaScriptCore}
+V8:n innoittamana muut virtuaalikonetoteutukset ovat muuttaneet toimintaansa siten, että tulkkia käytetään vain suorituksen alkuvaiheessa ja koodi pyritään kääntämään konekoodiksi mahdollisimman nopeasti \textit{suorituksenaikaisella kääntäjällä} eli \textit{JIT-kääntäjällä} (Just-In-Time compiler)~[lähde?].
 
-JavaScriptCore on WebKit-nimisen Web-teknologioita toteuttavan ohjelmistokomponentin JavaScript-virtuaalikone. Apple käyttää WebKitiä ja \mbox{JavaScriptCorea} Safari-selaimessaan.
+Varsinkin usein kutsutut, niin sanotut ``kuumat'' funktiot, pyritään kääntämään optimoiduksi konekoodiksi. Tätä varten käytetään erillistä optimoivaa JIT-kääntäjää, joka on hitaampi kuin ensimmäinen \textit{lähtötilannekääntäjä} (baseline compiler), mutta tuottaa suorituskykyisempää konekoodia. JavaScript-koodin optimointi osoittautuu kuitenkin hankalaksi.
 
-JavaScriptCore koostuu tulkista, yksinkertaisesta JIT-kääntäjästä sekä Googlen V8:n innoittamana optimoivasta JIT-kääntäjästä, jota he kutsuvat nimellä DFG-JIT. DFG tulee sanoista \textit{Data Flow Graph}, joka kuvaa ohjelman suorituksenaikaisen tyyppitiedon tallentavaa tietorakennetta. Eli kuten aikaisempien esimerkkien kohdalla, virtuaalikone ensin kerää tyyppitietoa ja sitten generoi optimoitua konekoodia~\cite{javascriptcore}.
+\subsection{Optimoinnin ongelmat}
 
-\subsection{Esimerkki: Chakra}
+Dynaamisesti tyypitetty konekoodi vaatii paljon tyyppitarkastuksia ja poikkeustapauksia riippuen muuttujien tyypeistä. On kuitenkin huomattu, että ohjelmat käyttäytyvät melko ennustettavalla tavalla. Etenkin usein kutsuttuja funktiota kutsutaan usein samantyyppisillä parametreilla.
 
-Tekstiä tähän...
+Virtuaalikoneiden ei kannata suoraan generoida optimoitua konekoodia JavaScript-ohjelmista, sillä niillä ei ole tietoa muuttujien tyypeistä. Prosessorin kannalta on hyvin tärkeää tietää tehdäänkö jokin operaatio kokonaisluvuille, liukuluvuille tai kenties merkkijonoille. Lisäksi ei ole järkevää käyttää paljon aikaa koodin optimointiin, jos se suoritetaan vain muutamia kertoja.
 
-\subsection{JavaScriptin tuomat haasteet}
+Virtuaalikoneet aloittavat keräämällä tietoa ohjelman käyttäytymisestä. Tiedon kerääminen hoidetaan usein tulkissa ja V8:n lähtötilannekääntäjä lisää generoituun konekoodiin käskyjä keräämään tietoa ohjelman käyttämistä tyypeistä~\cite{v8compilers}.
 
-Kuten aikaisemmista esimerkeistä käy ilmi, virtuaalikoneet eivät voi suoraan generoida optimoitua konekoodia JavaScript-ohjelmista, sillä ei ole tietoa muuttujien tyypeistä. Prosessorin kannalta on hyvin tärkeää tietää tehdäänkö jokin operaatio kokonaisluvuille, liukuluvuille vai kenties merkkijonoille.
+Avoimen lähdekoodin WebKit-projekti sisältää JavaScriptCore-nimisen virtuaalikoneen, jota käytetään esimerkiksi Applen Safari selaimessa. JavaScriptCore koostuu tulkista, yksinkertaisesta JIT-kääntäjästä sekä Googlen V8:n innoittamana optimoivasta JIT-kääntäjästä, jota he kutsuvat nimellä \textit{DFG-JIT}. DFG tulee sanoista \textit{Data Flow Graph}, joka kuvaa ohjelman suorituksenaikaisen tyyppitiedon tallentavaa tietorakennetta. Eli muiden virtuaalikoneiden tapaan, JavaScriptCore kerää ensin tyyppitietoa ja sitten generoi optimoitua konekoodia~\cite{javascriptcore}.
 
-Automaattinen roskienkeruu on todella kätevä toiminnallisuus ohjelmoijan kannalta, mutta sen toteuttaminen hyvin on haastavaa. Ohjelman on pysähdyttävä ja käytävä läpi muistin sisältöä ja vapauttaa muistialueita, jotka eivät ole enää käytössä. Selaimen tapauksessa tämä voi aiheuttaa verkkosovelluksen hidastumista ja huonontaa käyttökokemusta, varsinkin jos kyseessä on interaktiivinen toiminto tai animaatio.
+Automaattinen roskienkeräys on todella kätevä toiminnallisuus ohjelmoijan kannalta, mutta sen toteuttaminen hyvin on haastavaa. Virtuaalikoneen täytyy pysäyttää ohjelman suoritus ja käydä läpi muistin sisältö vapauttaen muistialueita, jotka eivät ole enää käytössä. Selaimen tapauksessa tämä voi aiheuttaa verkkosovelluksen hidastumista. Hidastuminen huonontaa käyttökokemusta, varsinkin jos kyseessä on interaktiivinen ohjelma tai animaatio.
+
+%https://blog.chromium.org/2010/12/new-crankshaft-for-v8.html
+%An optimizing compiler which recompiles and optimizes hot code identified by the runtime profiler. It uses static single assignment form to perform optimizations such as loop-invariant code motion, linear-scan register allocation and inlining. The optimization decisions are based on type information collected while running the code produced by the base compiler.
