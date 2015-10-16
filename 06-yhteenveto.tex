@@ -1,14 +1,9 @@
 \section{Yhteenveto}
 
-Vaikka JavaScriptin suunnittelijoilla ei voinut olla käsitystä mihin kaikkeen JavaScriptia tultaisiin käyttämään, he onnistuivat luomaan hitin. Alkuvaiheessa kukaan ei varmaan osannut ennustaa kielen tulevaa menestystä. Eikä menestys olisi ollut mahdollinen ilman toteuttajien innovaatioita.
+Vaikka JavaScriptin suunnittelijoilla ei voinut olla käsitystä mihin kaikkeen JavaScriptia tultaisiin käyttämään, he onnistuivat luomaan hitin. Alkuvaiheessa kukaan ei varmaankaan osannut ennustaa kielen tulevaa menestystä, eikä menestys olisi ollut mahdollinen ilman toteuttajien innovaatioita.
 
-Googlen innovatiivinen työ V8:n kanssa on kannustanut muita virtuaalikoneiden kehittäjiä parantamaan virtuaalikoneidensa suorituskykyä. Siirtyminen pelkästä tulkista eritasoisiin JIT-kääntäjiin on parantanut suorituskykyä huomattavasti aikaisempaan arkkitehtuuriin verrattuna~[lähde?].
+Googlen innovatiivinen työ V8:n kanssa on kannustanut muita virtuaalikoneiden kehittäjiä parantamaan virtuaalikoneidensa suorituskykyä. Siirtyminen pelkästä tulkista eritasoisiin JIT-kääntäjiin on parantanut suorituskykyä huomattavasti aikaisempaan arkkitehtuuriin verrattuna.
 
-Virtuaalikoneiden kehittäjät tuntuvat jatkuvasti julkaisevan uusia viestejä blogeissaan, jossa he kertovat kuinka he ovat taas keksineet tai toteuttaneet uusia tapoja optimoida virtuaalikonettaan. Esimerkiksi V8:n kehittäjät kertovat blogissaan toteuttavansa uutta optimoivaa kääntäjää~[lähde], joka pystyy optimoimaan enemmän erikoistapauksia kuin nykyinen ja mahdollistaen helpomman jatkokehityksen.
+Nykyinen trendi käyttää JIT-kääntäjiä ja olettaa ohjelmien staattinen käyttäytyminen voi kuitenkin olla huono idea pidemmällä tähtäimellä. Vaikka virtuaalikoneet näyttävät nopeilta suorituskykytesteissä, voi verkkopalveluiden todelliset käyttäytymismallit olla dynaamisempia. Korkean tason ohjelmointikielen ohjelmoijan ei pitäisi tarvita tietää virtuaalikoneen sisäisestä toteutuksesta pystyäkseen kirjoittamaan tehokasta koodia.
 
-%\begin{itemize}
-%\item Alkutilanne
-%\item Muutos
-%\item Nykytilanne
-%\item Tulevaisuus
-%\end{itemize}
+Virtuaalikoneiden kehittäjät tuntuvat jatkuvasti julkaisevan uusia viestejä blogeissaan, joissa he kertovat kuinka he ovat taas keksineet tai toteuttaneet uusia tapoja optimoida virtuaalikonettaan. Esimerkiksi V8:n kehittäjät kertovat blogissaan toteuttavansa uutta optimoivaa kääntäjää~\cite{turbofan}, joka pystyy optimoimaan enemmän erikoistapauksia kuin nykyinen ja mahdollistaa helpomman jatkokehityksen.
