@@ -43,17 +43,9 @@
 \usepackage[fixlanguage]{babelbib}
 \selectbiblanguage{finnish}
 
-% Babelbib doesn't support finnish ordinals for example edition = 6 -> kuudes painos.
-\declarebtxcommands{finnish}{
-  \def\btxnumeralshort#1{
-    #1.}
-  \def\btxnumerallong#1{
-    \ifnumber{#1}{
-      \ifcase#1 nollas\or ensimmäinen\or toinen\or kolmas\or neljäs\or viides\or
-        kuudes\or seitsemäs\or kahdeksas\or yhdeksäs\or kymmenes\else
-        #1.
-      \fi
-    }{#1}}
+% Hack with negative space to fix space before full stop.
+\declarebtxcommands{finnish}{%
+\def\btxurldatecomment#1{, vierailtu #1\!\!}%
 }
 
 % Remove [brackets] around keys.
@@ -89,9 +81,12 @@
 \title{JavaScript ja virtuaalikoneet}
 \author{Ville Lahdenvuo}
 \date{\today}
-\level{Aine}
-%\level{Kandidaatintutkielma}
-\abstract{\input{abstract}}
+\level{Kandidaatintutkielma}
+\abstract{
+  \renewcommand{\baselinestretch}{1.5}
+  \selectfont
+  \input{abstract}
+}
 
 % The following can be used to specify keywords and classification of the paper:
 
@@ -142,8 +137,8 @@
 \input{01-johdanto}
 \input{02-virtuaalikoneiden-toiminta}
 \input{03-optimointi}
-%\input{04-vertailu}
-%\input{05-tulevaisuus}
+\input{04-vertailu}
+\input{05-tulevaisuus}
 \input{06-yhteenveto}
 
 % --- References ---

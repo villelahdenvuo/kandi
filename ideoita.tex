@@ -1,0 +1,25 @@
+## Virtuaalikoneen määritelmä!
+# https://wingolog.org/archives/2011/10/28/javascriptcore-the-webkit-js-implementation
+
+Before really getting into things, I should make an aside about terminology here. Traditionally, at least in my limited experience, a virtual machine was considered to be a piece of software that interprets sequences of virtual instructions. This would be in contrast to a "real" machine, that interprets sequences of "machine" or "native" instructions in hardware.
+
+But these days things are more complicated. A common statement a few years ago would be, "is JavaScript interpreted or compiled?" This question is nonsensical, because "interpreted" or "compiled" are properties of implementations, not languages. Furthermore the implementation can compile to bytecode, but then interpret that bytecode, as JSC used to do.
+
+And in the end, if you compile all the bytecode that you see, where is the "virtual machine"? V8 hackers still call themselves "virtual machine engineers", even as there is no interpreter in the V8 sources (not counting the ARM simulator; and what of a program run under qemu?).
+
+All in all though, it is still fair to say that JavaScriptCore's high-level intermediate language is a sequence of virtual instructions for an abstract register machine, of which the interpreter and the simple method JIT are implementations.
+
+## JSC vs. V8
+# https://wingolog.org/archives/2011/10/28/javascriptcore-the-webkit-js-implementation
+
+To put that into perspective, in V8, the high-level intermediate representation is the JS source code itself. When V8 first sees a piece of code, it pre-parses it to raise early syntax errors. Later when it needs to analyze the source code, either for the full-codegen compiler or for Hydrogen, it re-parses it to an AST, and then works on the AST.
+
+In contrast, in JSC, when code is first seen, it is fully parsed to an AST and then that AST is compiled to bytecode. After producing the bytecode, the source text isn't needed any more, and so it is forgotten. The interpreter interprets the bytecode directly. The simple method JIT compiles the bytecode directly. The DFG JIT has to re-parse the bytecode into an SSA-style IR before optimizing and producing native code, which is a bit more expensive but worth it for hot code.
+
+The difference between JSC and Crankshaft here is that Crankshaft parses out type feedback from the inline caches directly, instead of relying on in-code instrumentation. I think Crankshaft's approach is a bit more elegant, but it is prone to lossage when GC blows the caches away, and in any case either way gets the job done.
+
+Also, the DFG's register allocator is not as good as Crankshaft's, yet. It is hampered in this regard by the JSC assembler that I praised earlier; while indeed a well-factored, robust piece of code, JSC's assembler has a two-address interface instead of a three-address interface. This means that instead of having methods like add(dest, op1, op2), it has methods like add(op1, op2), where the operation implicitly stores its result in its first operand. Though it does correspond to the x86 instruction set, this sort of interface is not great for systems where you have more registers (like on x86-64), and forces the compiler to shuffle registers around a lot.
+
+## Inline caching
+# https://wingolog.org/archives/2011/07/05/v8-a-tale-of-two-compilers
+Kohta "type feedback"

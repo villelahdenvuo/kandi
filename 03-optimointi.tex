@@ -1,16 +1,22 @@
 \section{Optimointimenetelmät}
 
-Konekoodiksi kääntäminen tuo ongelmaksi hitaan käännösvaiheen. Tämän takia modernit virtuaalikoneet sisältävät useamman kuin yhden kerroksen JIT-kääntäjiä eritasoisilla optimoinneilla. Tässä luvussa esitellään muutamia keinoja, joilla JavaScript-virtuaalikoneet ovat parantaneet tuottamansa konekoodin suorituskykyä.
+Tässä luvussa esitellään muutamia menetelmiä, joilla kehittäjät ovat parantaneet virtuaalikoneidensa tuottaman konekoodin suorituskykyä. Osa menetelmistä hyödyntää virtuaalikoneen keräämää tietoa sovelluksessa esiintyvistä tyypeistä.
+
+%Konekoodin suorittaminen on nopeaa, mutta kääntäminen on hidas prosessi varsinkin, jos kääntäjä tekee monimutkaisia optimointeja. Tämän takia modernit virtuaalikoneet sisältävät useamman kuin yhden JIT-kääntäjän, kuten esimerkiksi V8:n tapauksessa. Tässä luvussa esitellään muutamia menetelmiä, joilla kehittäjät ovat parantaneet virtuaalikoneidensa tuottaman konekoodin suorituskykyä.
 
 \subsection{Piiloluokat}
 
-JavaScriptin oliot käyttävät prototyyppiperintää. Tämä tarkoittaa, että oliolla voi olla toinen olio prototyyppinään, jolla on toinen olio prototyyppinään ja niin edelleen. Kun oliolta pyydetään jonkin \textit{ominaisuuden} (property) arvoa, etsitään sitä ensin itse oliosta. Jos sitä ei löydy, käydään olion prototyyppiketjua läpi, kunnes ominaisuus löytyy tai kaikki prototyypit on käyty läpi, jolloin arvo on ''undefined``. Tämä tarkoittaa, että ominaisuuksien arvot saattavat olla muistissa kaukana toisistaan ja niiden löytämiseen tarvitaan hidasta assosiatiivista hakurakennetta.
+JavaScriptin oliot käyttävät prototyyppiperintää. Tämä tarkoittaa, että oliolla on käytännössä aina jokin olio prototyyppinään, jolla on toinen olio prototyyppinään ja niin edelleen. Kun oliolta pyydetään jonkin \textit{ominaisuuden} (property) arvoa, etsitään sitä ensin itse oliosta. Jos ominaisuutta ei löydy, käydään olion prototyyppiketjua läpi, kunnes se löytyy tai kaikki prototyypit on käyty läpi, jolloin ominaisuuden arvoksi palautetaan \texttt{undefined}.
 
-V8 esitteli ominaisuuden nimeltään \textit{piiloluokka} (hidden class)~\cite{v8design}. Piiloluokat ovat staattisia eli \textit{muuttumattomia} (immutable) luokkia, joita virtuaalikone käyttää dynaamisten JavaScript-olioiden rakenteen kuvaamiseen. Piiloluokka on tavallaan siis olion tyyppi, vaikka JavaScriptissä muuttujilla ei ole tyyppejä. Olioita voi käyttää hyvin dynaamisesti, mutta virtuaalikone olettaa, että useimmissa tapauksissa niitä käytetään melko staattisesti. Käyttämällä piiloluokkaa ikään kuin olion tyyppinä virtuaalikoneet voivat hyödyntää tehokkaita kääntämistekniikoita, joita käytetään staattisesti tyypitetyissä kielissä.
+Ominaisuuden lisääminen tai muuttaminen päivittää oliota, ei koskaan sen prototyyppiä. Jos ominaisuutta ei ole oliossa, se lisätään siihen, vaikka kyseinen ominaisuus löytyisikin prototyyppiketjusta. Tällöin saman prototyypin omaavat oliot säilyttävän vanhan arvon ja vain muutettu olio käyttää uutta arvoa. Olion prototyyppiä pääsee kuitenkin muokkaamaan epästandardin \texttt{\_\_proto\_\_}-ominaisuuden kautta tai standardiin myöhemmin lisätyn \texttt{Object.getPrototypeOf(obj)}-funktion avulla.
 
-Tämä onnistuu siten, että kun olio luodaan, luodaan sille piiloluokka. Aina kun oliota muutetaan lisäämällä siihen ominaisuus, luodaan sitä vastaamaan uusi piiloluokka. Luokkaa ei voi tehdä etukäteen, koska dynaamisuuden takia on vaikea tietää ennalta millainen olio tulee rakenteeltaan olemaan.
+Dynaamisesta prototyyppiperintämallista johtuen ominaisuuksien arvot saattavat olla muistissa kaukana toisistaan ja niiden löytämiseen tarvitaan hidasta assosiatiivista hakurakennetta. Staattisissa luokkaperintään pohjautuvissa kielissä olioiden rakenne on helppo muuttaa tietokoneen ymmärtämään muotoon.
 
-Kuvassa~\ref{fig:hiddenclass} näkyy esimerkki Piste-nimisen olion ja sen piiloluokan muodostus. Kun konstruktorifunktiota kutsutaan, luodaan tyhjä olio, jota virtuaalikone kuvaa tyhjällä piiloluokalla \textbf{C0}. Luokkaa C0 käytetään kuvaamaan kaikkia tyhjiä olioita, joilla on sama prototyyppi. Konstruktorissa olioon liitetään ominaisuus x, jolloin virtuaalikone luo uuden piiloluokan \textbf{C1} ja lopulta y:n lisäyksen jälkeen \textbf{C2}:n. Piiloluokkiin tallennetaan tieto mihin luokkaan pitää siirtyä tietyn ominaisuuden lisäämisen jälkeen.
+V8:n kehittäjät esittelivät ominaisuuden nimeltään \textit{piiloluokka} (hidden class)~\cite{v8design}. Piiloluokat ovat \textit{muuttumattomia} (immutable) luokkia, joita virtuaalikone käyttää JavaScript-olioiden rakenteen kuvaamiseen. Piiloluokka on tavallaan siis olion tyyppi, vaikka JavaScriptissä olioilla ei ole varsinaisesti tyyppejä, paitsi kieleen sisäänrakennetut perustyypit, kuten \texttt{String} ja \texttt{Number}. Käyttämällä piiloluokkaa olion tyyppinä virtuaalikoneet voivat hyödyntää tehokkaita kääntämistekniikoita, joita käytetään yleisesti staattisesti tyypitetyissä kielissä.
+
+Piiloluokat toimivat siten, että oliota luodessa ensimmäistä kertaa, virtuaalikone luo sille samalla piiloluokan. Aina kun oliota muutetaan lisäämällä siihen ominaisuus, luodaan sitä vastaamaan uusi piiloluokka tai käytetään olemassa olevaa piiloluokkaa. Piiloluokkia ei voi tehdä etukäteen, koska dynaamisuuden takia on vaikea tietää ennalta millainen olio tulee rakenteeltaan olemaan. 
+
+Kuvassa~\ref{fig:hiddenclass} näkyy, miten V8 luo piiloluokkia luodessaan Piste-olion ensimmäisen kerran. Jokainen kaavion askel vastaa yhden koodirivin suorittamista. Kun konstruktorifunktiota kutsutaan, luodaan tyhjä olio, johon viitataan avainsanalla \texttt{this}. Virtuaalikone kuvaa sitä tyhjällä piiloluokalla \texttt{C0}. Luokkaa \texttt{C0} käytetään kuvaamaan kaikkia tyhjiä olioita, joilla on sama prototyyppi, joka on oletuksena kieleen sisäänrakennetun \texttt{Object}-olion ilmentymä. Konstruktorissa olioon liitetään ominaisuus \texttt{x}, jolloin virtuaalikone luo uuden piiloluokan \texttt{C1} ja lopulta \texttt{y}:n lisäyksen jälkeen \texttt{C2}:n. Piiloluokkiin tallennetaan myös tieto mihin luokkaan pitää siirtyä tietyn ominaisuuden lisäämisen jälkeen sekä viittaus olion prototyyppiin.
 
 \begin{figure}[ht]
     \includegraphics[width=\textwidth]{hidden-classes}
@@ -19,29 +25,46 @@ Kuvassa~\ref{fig:hiddenclass} näkyy esimerkki Piste-nimisen olion ja sen piilol
      \label{fig:hiddenclass}
 \end{figure}
 
-Piiloluokkia ei tarvitse luoda uudestaan joka kerta kun halutaan luoda uusi Piste-olio. Riittää, että seurataan niihin sisällytettyjä tietoja siirtymistä. Kun uusi Piste-olio luodaan, päädytään lopulta samaan piiloluokkaan \textbf{C2}. Kaikki Piste-oliot ovat siis tavallaan samantyyppisiä.
+Piiloluokkia ei tarvitse luoda uudestaan joka kerta, kun halutaan luoda uusi Piste-olio. Riittää, että seurataan niihin sisällytettyjä tietoja siirtymistä. Kun uusi Piste-olio luodaan, päädytään lopulta samaan piiloluokkaan \texttt{C2}. Kaikki Piste-oliot ovat siis virtuaalikoneen näkökulmasta samantyyppisiä.
 
-Kun Piste-oliolta pyydetään esimerkiksi ominaisuuden x arvoa, virtuaalikone tietää, että olio on luokan \textbf{C2} ''tyyppinen`` ja arvo löytyy yhdellä konekäskyllä muistipaikasta 0 ilman, että täytyy tehdä hidasta hakua assosiatiivisesta hakurakenteesta. Virtuaalikone voi siis generoida tehokkaampaa konekoodia ja muistiviittaukset nopeutuvat huomattavasti.
+Kun Piste-oliolta pyydetään esimerkiksi ominaisuuden \texttt{x} arvoa, virtuaalikone tietää, että olio on luokan \texttt{C2} ''tyyppinen'' ja arvo löytyy yhdellä konekäskyllä olion muistipaikasta siirtymällä 0 ilman, että täytyy tehdä hidasta hakua assosiatiivisesta hakurakenteesta. Virtuaalikone voi siis generoida tehokkaampaa konekoodia ja muistiviittaukset nopeutuvat huomattavasti.
 
-Jos oliota muokataan uudestaan luomisen jälkeen, luodaan sille uusi piiloluokka ja optimoinnit täytyy suorittaa tälle uudelle tyypille uudestaan. Jos kaikkia ominaisuuksia ei alusteta aina samassa järjestyksessä tai niitä alustetaan ehdollisesti, se tuottaa ongelmia piiloluokkien toiminnan kannalta. Ongelmaksi muodostuu myös se, että piiloluokkaan sisällytetään koko prototyyppiketju~\cite[s.~499]{Ahn2014}, jolloin muutokset johonkin prototyyppiketjussa ylempänä olevaan objektiin pakottavat uuden piiloluokan luomisen.
+%Jos oliota muokataan luomisen jälkeen, luodaan sille uusi piiloluokka ja optimoinnit täytyy suorittaa tälle uudelle tyypille uudestaan. Jos kaikkia ominaisuuksia ei alusteta aina samassa järjestyksessä tai niitä alustetaan ehdollisesti, se tuottaa ongelmia piiloluokkien toiminnan kannalta.
+
+Syy, miksi luodaan useita piiloluokkia yhden olion luonnin yhteydessä on, että niihin lisätyt siirtymätiedot mahdollistavat erilaisten olioiden luomisen käyttäen hyväksi jo luotuja piiloluokkia. Esimerkiksi \texttt{Ympyrä}-olio voi sisältää ominaisuudet \texttt{x}, \texttt{y} ja \texttt{r}, jolloin sen luomisessa käytetään piiloluokkia \texttt{C0}, \texttt{C1}, \texttt{C2} ja luodaan uusi \texttt{C3}. Vaihtoehtoisesti voimme luoda 3-ulotteisen Pisteen, jolla on tasokoordinaattien lisäksi \texttt{z}-ominaisuus. Tällöin piiloluokka \texttt{C2} sisältää tiedon siirtymästä molemmissa, ympyrän ja 3-ulotteisen pisteen, tapauksissa.
+
+Wonsun Ahn kumppaneineen on tutkinut piiloluokkien hyötyjä ja haittoja todellisissa verkkosovelluksissa~\cite{Ahn2014}. Tutkimuksissa on löytynyt muutamia heikkouksia, jotka vähentävät piiloluokkien hyötyjä todellisissa sovelluksissa ja heikkouksiin ehdotetaan parannuksia. Tutkimuksessa myös moititaan kehittäjien vahvaa oletusta ohjelmien staattisesta käytöksestä.
 
 \subsection{Sisällytetty välimuisti}
 
-Yleinen olettamus on, että samalla \textit{hakupaikalla} (access site) oliot ovat usein samantyyppisiä. Tämän takia on alettu käyttämään \textit{sisällytettyä välimuistia} (inline cache)~\cite[s.~498]{Ahn2014}. Nimi tulee siitä, että välimuisti tulee osaksi generoitua konekoodia.
+\textit{Hakupaikaksi} (access site) kutsutaan kohtaa koodissa, jossa viitataan olion ominaisuuteen. Koska muuttujilla ei ole tyyppiä, virtuaalikone ei voi tietää ennalta löytyykö edes kyseistä ominaisuutta. Yleinen olettamus on, että samalla hakupaikalla oliot ovat usein samantyyppisiä. Tämän takia esimerkiksi V8:ssa on alettu käyttää \textit{sisällytettyä välimuistia} (inline cache)~\cite[s.~498]{Ahn2014}. Nimi tulee siitä, että välimuisti on osa generoitua konekoodia.
 
-Esimerkiksi Piste-oliolla voi olla metodi getX, joka palauttaa x:n arvon. Keräämällä tietoa suoritusaikana virtuaalikone voi päätellä, että tässä kohtaa olio on usein Piste-olio. Virtuaalikone muokkaa konekoodia ja lisää tarkistuksen "onko olion piiloluokka sama kuin Piste-olion?". Jos oliolla on sama piiloluokka, x:n arvon lukemiseksi riittää katsoa piiloluokasta sen \textit{siirtymä} (offset) muistissa ja suorittaa yksi muistioperaatio.
+Olkoon esimerkiksi funktio \texttt{getX(obj)}, joka palauttaa sille syötetyn olion ominaisuuden \texttt{x} arvon. Keräämällä tietoa suoritusaikana virtuaalikone voi päätellä, että tässä hakupaikassa \texttt{obj} on usein Piste-olio. Virtuaalikone voi muokata konekoodia ja lisätä tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C2}?'' Jos oliolla on tämä piiloluokka, arvon lukemiseksi riittää katsoa piiloluokasta sen siirtymä muistissa ja suorittaa yksi konekäsky sen hakemiseksi.
 
-V8:ssa on kolmen tyyppisiä sisällytettyjä välimuisteja: \textit{lataukselle} (load), \textit{talletukselle} (store) ja \textit{kutsumiselle} (call). Lataaminen tarkoittaa olion ominaisuuden hakemista ja talletus sen päivittämistä. Kutsuminen tarkoittaa olion metodin kutsumista ja se on samankaltainen lataamisen kanssa, sillä ensin pitää ladata metodi, joka on JavaScriptissä viittaus funktio-olioon.
+V8:ssa on kolmen tyyppisiä sisällytettyjä välimuisteja: \textit{lataukselle} (load), \textit{talletukselle} (store) ja \textit{kutsumiselle} (call). Lataaminen tarkoittaa olion ominaisuuden hakemista ja talletus sen päivittämistä. Kutsuminen tarkoittaa olioon liitetyn funktion kutsumista ja se on samankaltainen lataamisen kanssa, sillä ensin pitää ladata funktio, joka on JavaScriptissä viittaus funktio-olioon.
 
-Jos välimuistista tulee huti, V8 lisää uuden olion piiloluokan tarkistuksen sisällytettyyn välimuistiin. Ylimääräiset tarkistukset tekevät koodista hitaampaa, mutta tutkimusten mukaan~\cite[s.~498]{Ahn2014} suoritus välimuistin avulla voi olla parhaimmillaan monta suuruusluokkaa nopeampi kuin ilman välimuistia, joten tässä tapauksessa vaihtokauppa on kannattava.
+Jos olion tyyppiä ei löydy sisällytetystä välimuistista, V8 voi lisätä tarkistuksen sisällytettyyn välimuistiin. Esimerkiksi jos ohjelma alkaa kutsua \texttt{getX}-funktiota ympyräolioilla, V8 voi lisätä sisällytettyyn välimuistiin tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C3}?'', jolloin arvon voi ladata taas nopeasti tunnetusta siirtymästä. Tämä vaatii muutoksia suorituksessa olevaan konekoodiin, koska sisällytetty välimuisti on osa konekoodia.
 
-\subsection{Roskienkeräys}
+Ylimääräiset tarkistukset tekevät suorituksesta hitaampaa. Tutkimuksen mukaan suoritus välimuistin avulla voi olla parhaimmillaan monta kertaluokkaa nopeampaa kuin ilman välimuistia~\cite[s.~498]{Ahn2014}, joten  tulokset tukevat sisällytetyn välimuistin käyttöä.
 
-\textit{Roskienkeräys} (garbage collection) on perinteisesti toiminut melko yksinkertaisella algoritmilla nimeltään \textit{merkitse ja pyyhkäise} (mark-and-sweep). Se aloittaa merkitsemisvaiheella ja lähtee liikkeelle niin sanotusta juurisetistä olioita. Algoritmi seuraa muistiviitteitä merkiten vastaan tulleet oliot kunnes kaikki on käyty läpi. Sen jälkeen tulee pyyhkäisyvaihe. Algoritmi käy läpi koko muistin ja vapauttaa kaikki oliot, jotka eivät ole merkittyjä. Samalla algoritmi poistaa merkit seuraavaa kierrosta varten.
+\subsection{Aktivaatiotietueiden manipulointi}
 
-Ohjelman suoritus ei voi jatkua roskienkeräyksen aikana ja koko muistialueen merkitseminen ja läpikäyminen on hidasta. Tämä on suuri ongelma varsinkin animaatioiden ja interaktiivisten sovellusten tapauksessa, sillä pitkä roskienkeräystauko haittaa käytettävyyttä ja saa sovelluksen tuntumaan hitaalta vaikka muu suoritus olisikin todella nopeaa.
+(On-stack replacement)
 
-Ongelman ratkaisemiseksi on kehitetty erilaisia heuristiikkoja ja optimointeja. Esimerkiksi \textit{sukupolvittainen roskienkeräys} (generational garbage collection)~\cite{v8design} perustuu oletukseen, että suurin osa luoduista muistivarauksista on lyhytaikaisia. Jakamalla muistialue kahteen erikokoiseen sukupolveen, nuoreen ja vanhaan, voidaan allokoida uudet oliot pienemmälle nuorelle alueelle. Nuoren alueen voi pienempänä käsitellä nopeammin ja useammin. Jos olio selviää nuorella alueella roskienkeräyksestä, se on todennäköisesti pitkäikäisempi olio ja se siirretään vanhalle alueelle, jota käsitellään harvemmin.
+\subsection{Roskienkeruu}
+
+JavaScript-virtuaalikoneiden \textit{roskienkeruu} (garbage collection) on perinteisesti toiminut melko yksinkertaisella algoritmilla nimeltään \textit{merkitse ja pyyhkäise} (mark-and-sweep). Algoritmi perustuu nimensä mukaisesti kahteen vaiheeseen. Ensimmäinen on merkitsemisvaihe, jossa käydään läpi kaikki ohjelman viittaamat oliot ja merkitään ne. Sitten seuraa pyyhkäisyvaihe, jossa koko muisti käydään läpi ja vapautetaan kaikki oliot, jotka eivät ole merkittyjä ja samalla poistetaan merkit seuraavaa suoritusta varten.
+
+Ohjelman suoritus ei voi jatkua roskienkeruun aikana, koska ohjelma voi käyttää muistia milloin vain, ja koko muistialueen käsitteleminen on hidasta. Tämä on suuri ongelma varsinkin animaatioiden ja interaktiivisten sovellusten tapauksessa, sillä pitkä roskienkeruutauko haittaa käytettävyyttä ja saa sovelluksen tuntumaan hitaalta, vaikka muu suoritus olisikin todella nopeaa.
+
+Ongelman ratkaisemiseksi on kehitetty monenlaisia heuristiikkoja ja optimointeja. Automaattisesta muistinhallinnasta riittää materiaalia useampaankin tutkielmaan~\cite{gcbib}, joten on listaan tässä tärkeimpiä menetelmiä, joilla roskienkeruuta on parannettu:
+
+\begin{itemize}
+\item \textit{sukupolvittainen roskienkeruu} (generational garbage collection)~\cite{v8design}
+\item \textit{inkrementaalinen roskienkeruu} (incremental garbage collection)~\cite{incrementalgc}
+\item roskienkeruu ''luppoaikana'' eli roskienkeruun aikataulutus~\cite{freegc}
+\item \textit{lehtioliot} (leaf objects) eli oliot joista ei lähde viittauksia~\cite{ie10}
+\end{itemize}
 
 %\subsection{Staattinen kertasijoitusmuoto}
 
