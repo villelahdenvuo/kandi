@@ -1,1 +1,61 @@
+\pagebreak
 \section{Toteutusten vertailua}
+
+Eri virtuaalikonetoteutukset ovat ottaneet käyttöön samoja optimointimenetelmiä, mutta kehittäjien erilaiset ajattelutavat ja perinteet ovat ohjanneet niiden arkkitehtuureja ja käytäntöjä. Toteutuksista löytyy siis yhtäläisyyksiä sekä eroavaisuuksia, jotka saattavat vaikuttaa niiden suorituskykyyn vaikka JavaScriptin toiminta on tarkasti määritelty. Vertailuun on valittu Googlen V8, Applen JavaScriptCore, Mozillan SpiderMonkey ja Microsoftin Chakra -virtuaalikoneet, koska niistä löytyy parhaiten tietoa pois lukien Chakra. Chakra on ainoana suljettua lähdekoodia, mutta silti mielenkiintoinen ja merkittävä käyttäjämäärällisesti.
+
+\subsection{Suoritusarkkitehtuuri}
+
+Ensimmäinen kiinnostava tieto on, mitä virtuaalikone korkealla tasolla tekee koodille suorittaakseen sitä. Monissa virtuaalikoneissa kuten Applen JavaScriptCore, Microsoftin Chakra ja Mozillan SpiderMonkey on vielä tulkki, jota käytetään suorituksen alussa.
+
+JavaScriptCore ei ole hylännyt tulkkiaan vaikka siihen on lisätty JIT-kääntäjiä. Sen sijaan sen tulkki on kirjoitettu kokonaan uudelleen paljon edeltäjäänsä paremmaksi ja sille on annettu uusi nimi ''LLInt''~\cite{llint}. Ironista kyllä vaikka Google ei alunperin käyttänyt lainkaan tulkkia V8-virtuaalikoneeseensa, se on nyt kehittämässä tulkkia nimeltä ''Ignition''~\cite{v8ignition}. Uusi tulkki perustuu JavaScriptCoren LLInt-tulkkiin. Perustelut muutokselle ovat ymmärrettäviä.
+
+Uutta tulkkia aiotaan käyttää ainakin alkuun ensisijaisesti mobiililaitteissa, joissa on rajoitettu määrä muistia ja suoritustehoa. Tällaisilla laitteilla kääntäminen konekoodiksi ennen suorittamista yksinkertaisesti liian hidasta, minkä takia halutaan nopeasti käynnistyvä tulkki. Lisäksi käännetty koodi vie enemmän muistia kuin tavukoodimuotoinen koodi. Aikaisemmin V8 on pitänyt JavaScript-lähdekoodia parhaana esitysmuotona ohjelmalle ja siitä on aina jäsennetty abstrakti syntaksipuu joka kerta ennen kääntämistä. Uusi tavukoodimuoto voisi kuitenkin toimia parempana välikielenä kääntäjille.
+
+Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa ja uusimmassa Chakra-virtuaalikoneessa on optimoiva JIT-kääntäjän lisäksi yksinkertainen JIT-kääntäjä, joka ei tee monimutkaisia optimointeja mahdollistaen nopeamman käännöksen konekoodiksi~\cite{chakra}. Saatavilla olevien tietojen mukaan Chakra ei tue aktivaatiotietueiden manipulointia.
+
+\begin{comment}
+\begin{itemize}
+\item V8 - vain konekoodia - ei tulkkia, baseline, crankshaft(, turbofan) (TULKKI?!)
+\item V8: \textbf{JS} -> AST -> native/Hydrogen (ssa) IR
+%\item \url{https://docs.google.com/document/d/11T2CRex9hXxoJwbYqVQ32yIPMh0uouUZLdyrtmMoL44/edit#}
+\item JSC - LLInt tulkki, method jit, dfg jit, ftl jit
+\item JSC JS -> AST -> \textbf{tavukoodi} (IR) -> native
+\item SpiderMonkey - tulkki, traceMonkey, jägerMonkey, ionMonkey
+\item SpiderMonkey: JS -> AST -> tavukoodi -> native
+%\item \url{http://www.infoq.com/news/2011/05/ionmonkey}
+\item Chakra - tulkki, simple jit, full jit
+\item Chakra: JS -> AST -> \textbf{tavukoodi}
+%\item \url{https://channel9.msdn.com/Events/WebPlatformSummit/2015/Chakra-The-JavaScript-Engine-that-powers-Microsoft-Edge}
+\item SSA-muoto ja de-facto optimoinnit!
+\end{itemize}
+\end{comment}
+
+% https://wingolog.org/archives/2011/10/28/javascriptcore-the-webkit-js-implementation
+
+%To put that into perspective, in V8, the high-level intermediate representation is the JS source code itself. When V8 first sees a piece of code, it pre-parses it to raise early syntax errors. Later when it needs to analyze the source code, either for the full-codegen compiler or for Hydrogen, it re-parses it to an AST, and then works on the AST.
+
+%In contrast, in JSC, when code is first seen, it is fully parsed to an AST and then that AST is compiled to bytecode. After producing the bytecode, the source text isn't needed any more, and so it is forgotten. The interpreter interprets the bytecode directly. The simple method JIT compiles the bytecode directly. The DFG JIT has to re-parse the bytecode into an SSA-style IR before optimizing and producing native code, which is a bit more expensive but worth it for hot code.
+
+\subsection{Tyyppien päättely}
+
+Kaikki vertailun virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää taustalla ja päättelevät tyyppejä suoritusaikana kerätyn tiedon perusteella. Konekoodista ei yksinkertaisesti saa nopeaa ilman tyyppispesifisiä käskyjä, koska ne ovat todella nopeita.
+
+V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin eli generoituun konekoodiin (eli suoritettavaan muistiin)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna sitä suoritettavaan muistiin.
+
+Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastavaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia, vaikka niillä on eri piiloluokat, koska niiden rakenne on tarpeeksi lähellä toisiaan.
+
+\begin{comment}
+\begin{itemize}
+\item V8 inline cache KOODISSA
+\item LLInt inlince cache MUISTISSA
+%Note that in order to tier directly to the optimizing compiler, you need type information. Building the LLInt with the DFG optimizer enabled causes the interpreter to be instrumented to record value profiles. These profiles record the types of values seen by instructions that load and store values from memory. Unlike V8, which stores this information in executable code as part of the inline caches, in the LLInt these value profiles are in non-executable memory.
+\item \url{https://wiki.mozilla.org/TypeInference}
+\item SpiderMonkey: Staattisen ja dynaamisen päättelyn yhdistelmä!
+\item \url{https://trac.webkit.org/wiki/JavaScriptCore#TypeInference}
+\item V8: hidden classes
+\item Chakra: kohta 12 min (Polymorphic inline caches (equivalent object type specilization))
+%https://channel9.msdn.com/Events/WebPlatformSummit/2015/Chakra-The-JavaScript-Engine-that-powers-Microsoft-Edge}
+\end{itemize}
+\end{comment}
+
+%\subsection{Roskienkeruu}
