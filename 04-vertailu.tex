@@ -1,17 +1,23 @@
 \pagebreak
 \section{Toteutusten vertailua}
 
-Eri virtuaalikonetoteutukset ovat ottaneet käyttöön samoja optimointimenetelmiä, mutta kehittäjien erilaiset ajattelutavat ja perinteet ovat ohjanneet niiden arkkitehtuureja ja käytäntöjä. Toteutuksista löytyy siis yhtäläisyyksiä sekä eroavaisuuksia, jotka saattavat vaikuttaa niiden suorituskykyyn vaikka JavaScriptin toiminta on tarkasti määritelty. Vertailuun on valittu Googlen V8, Applen JavaScriptCore, Mozillan SpiderMonkey ja Microsoftin Chakra -virtuaalikoneet, koska niistä löytyy parhaiten tietoa pois lukien Chakra. Chakra on ainoana suljettua lähdekoodia, mutta silti mielenkiintoinen ja merkittävä käyttäjämäärällisesti.
+Virtuaalikonetoteutukset ovat ottaneet käyttöön toistensa optimointimenetelmiä, mutta niiden kehittäjien erilaiset ajattelutavat ja perinteet ovat ohjanneet virtuaalikoneiden arkkitehtuureja ja käytäntöjä. Toteutuksista löytyy siis yhtäläisyyksiä sekä eroavaisuuksia, jotka vaikuttavat niiden suorituskykyyn, vaikka JavaScriptin toiminta on tarkasti määritelty. Vertailuun on valittu Googlen V8, Applen JavaScriptCore, Mozillan SpiderMonkey ja Microsoftin Chakra -virtuaalikoneet, koska niistä löytyy parhaiten tietoa paitsi Chakrasta. Se on toistaiseksi suljettua lähdekoodia, mutta silti mielenkiintoinen ja merkittävä käyttäjämäärällisesti. Microsoft on avaamassa sen lähdekoodin vuoden 2016 alussa~\cite{chakraopen}.
 
 \subsection{Suoritusarkkitehtuuri}
 
-Ensimmäinen kiinnostava tieto on, mitä virtuaalikone korkealla tasolla tekee koodille suorittaakseen sitä. Monissa virtuaalikoneissa kuten Applen JavaScriptCore, Microsoftin Chakra ja Mozillan SpiderMonkey on vielä tulkki, jota käytetään suorituksen alussa.
+Ensimmäinen kiinnostava tieto on, mitä virtuaalikone korkealla tasolla tekee koodille suorittaakseen sitä. Virtuaalikoneet eivät ole hylänneet tulkkejaan, vaikka niihin on lisätty JIT-kääntäjiä. Esimerkiksi JavaScriptCoren tulkki on kirjoitettu kokonaan uudelleen paljon edeltäjäänsä paremmaksi ja sille on annettu uusi nimi ''LLInt''~\cite{llint}. Ironista kyllä vaikka Google ei alunperin toteuttanut lainkaan tulkkia V8-virtuaalikoneeseensa, se on nyt kehittämässä tulkkia nimeltä ''Ignition''~\cite{v8ignition}. Uusi tulkki perustuu JavaScriptCoren LLInt-tulkkiin.
 
-JavaScriptCore ei ole hylännyt tulkkiaan vaikka siihen on lisätty JIT-kääntäjiä. Sen sijaan sen tulkki on kirjoitettu kokonaan uudelleen paljon edeltäjäänsä paremmaksi ja sille on annettu uusi nimi ''LLInt''~\cite{llint}. Ironista kyllä vaikka Google ei alunperin käyttänyt lainkaan tulkkia V8-virtuaalikoneeseensa, se on nyt kehittämässä tulkkia nimeltä ''Ignition''~\cite{v8ignition}. Uusi tulkki perustuu JavaScriptCoren LLInt-tulkkiin. Perustelut muutokselle ovat ymmärrettäviä.
+Perustelut muutokselle ovat ymmärrettäviä, sillä uutta tulkkia aiotaan käyttää ainakin alkuun ensisijaisesti mobiililaitteissa, joissa on rajoitettu määrä muistia ja heikompi suoritusteho. Tällaisilla laitteilla kääntäminen konekoodiksi ennen suorittamista yksinkertaisesti liian hidasta, minkä takia halutaan nopeasti käynnistyvä tulkki. Lisäksi käännetty koodi vie enemmän muistia kuin tavukoodimuotoinen koodi.
 
-Uutta tulkkia aiotaan käyttää ainakin alkuun ensisijaisesti mobiililaitteissa, joissa on rajoitettu määrä muistia ja suoritustehoa. Tällaisilla laitteilla kääntäminen konekoodiksi ennen suorittamista yksinkertaisesti liian hidasta, minkä takia halutaan nopeasti käynnistyvä tulkki. Lisäksi käännetty koodi vie enemmän muistia kuin tavukoodimuotoinen koodi. Aikaisemmin V8 on pitänyt JavaScript-lähdekoodia parhaana esitysmuotona ohjelmalle ja siitä on aina jäsennetty abstrakti syntaksipuu joka kerta ennen kääntämistä. Uusi tavukoodimuoto voisi kuitenkin toimia parempana välikielenä kääntäjille.
+Aikaisemmin V8 on pitänyt JavaScript-lähdekoodia parhaana esitysmuotona ohjelmalle ja siitä on aina jäsennetty abstrakti syntaksipuu joka kerta ennen kääntämistä. Uusi tavukoodimuoto voisi kuitenkin toimia myös parempana välikielenä kääntäjille ja alkuperäistä lähdekoodia ei tarvitsisi jäsentää uudelleen joka kerta.
 
-Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa ja uusimmassa Chakra-virtuaalikoneessa on optimoiva JIT-kääntäjän lisäksi yksinkertainen JIT-kääntäjä, joka ei tee monimutkaisia optimointeja mahdollistaen nopeamman käännöksen konekoodiksi~\cite{chakra}. Saatavilla olevien tietojen mukaan Chakra ei tue aktivaatiotietueiden manipulointia.
+Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa. Uusimmassa Chakra-virtuaalikoneessa on optimoivan JIT-kääntäjän lisäksi yksinkertainen JIT-kääntäjä, joka ei tee monimutkaisia optimointeja mahdollistaen nopeamman käännöksen konekoodiksi~\cite{chakra}. Saatavilla olevien tietojen mukaan Chakra ei tue aktivaatiotietueiden manipulointia, joten optimoitu koodi otetaan käyttöön vasta kun funktiota kutsutaan uudestaan. Chakran kehittäjät ovat pyrkineet hyödyntämään laitteistoa mahdollisimman paljon rinnakkaistamalla käännös- ja roskienkeruuoperaatioita.
+
+SpiderMonkeyn kehittäjät ovat olleet myös ahkeria ja virtuaalikone on nähnyt jo viisi erilaista JIT-kääntäjää: TraceMonkey, JägerMonkey, IonMonkey, OdinMonkey ja alkutilannekääntäjä (Baseline compiler)~\cite{monkeys}. Kaikki niistä ei ole enää käytössä, vaan osa on korvannut aikaisempia ja osa on siirtynyt eri vaiheeseen suorituksessa. Alkutilannekääntäjä on korvannut JägerMonkeyn, joka korvasi sitä edeltävän TraceMonkeyn.
+
+SpiderMonkey käyttää yhä tulkkia suorituksen alussa, mutta pyrkii kääntämään koodin mahdollisimman nopeasti alkutilannekääntäjällään~\cite{baseline}, IonMonkey keskittyy erityisesti paljon kutsuttujen funktioiden kovakouraiseen optimointiin ja OdinMonkey-kääntäjää käytetään vain asm.js-muotoisen koodin kääntämiseen etukäteen. Asm.js:stä kerrotaan lisää Tulevaisuus-luvussa.
+
+SpiderMonkey ei ole ainut virtuaalikone, joka on tuottanut useita virtuaalikoneita. V8:n kehittäjät rakentavat uutta JIT-kääntäjää, jota he kutsuvat nimellä TurboFan~\cite{turbofan}. JavaScriptCoren kehittäjät valmistelevat FTL JIT -nimistä kääntäjää~\cite{ftljit}.
 
 \begin{comment}
 \begin{itemize}
@@ -40,9 +46,9 @@ Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa ja uusimmassa C
 
 Kaikki vertailun virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää taustalla ja päättelevät tyyppejä suoritusaikana kerätyn tiedon perusteella. Konekoodista ei yksinkertaisesti saa nopeaa ilman tyyppispesifisiä käskyjä, koska ne ovat todella nopeita.
 
-V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin eli generoituun konekoodiin (eli suoritettavaan muistiin)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna sitä suoritettavaan muistiin.
+V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin, jotka ovat osa generoitua konekoodia (eli suoritettavaa muistia)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna tyyppitietoa suoritettavan muistin sekaan.
 
-Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastavaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia, vaikka niillä on eri piiloluokat, koska niiden rakenne on tarpeeksi lähellä toisiaan.
+Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi aikaisemmin mainitut Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia, vaikka niillä on eri piiloluokat, koska niiden rakenne on tarpeeksi lähellä toisiaan.
 
 \begin{comment}
 \begin{itemize}
@@ -57,5 +63,3 @@ Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäj�
 %https://channel9.msdn.com/Events/WebPlatformSummit/2015/Chakra-The-JavaScript-Engine-that-powers-Microsoft-Edge}
 \end{itemize}
 \end{comment}
-
-%\subsection{Roskienkeruu}

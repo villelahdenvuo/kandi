@@ -23,9 +23,7 @@ Roskienkerääjän tehtävä on poistaa muistista muuttujat ja oliot, joihin ohj
 
 \subsection{Suoritusaikainen kääntäminen}
 
-% TODO: Betterer!
-
-Riippumatta toteutustavasta tulkki joutuu aina tekemään useita konekäskyjä suhteessa tavukoodikäskyjen määrään~\cite[s.~35]{vms}. Tämä johtuu siitä, että tulkki toimii ohjelmistotasolla, kun todellinen prosessori hyödyntää laitteistoa suoraan. Valitettavasti tämä tekee tulkeista hitaampia kuin haluttaisiin.
+Riippumatta toteutustavasta tulkki joutuu aina tekemään useita konekäskyjä suorittaakseen yhden tavukoodikäskyn~\cite[s.~35]{vms}. Tämä johtuu siitä, että tavukoodi toimii ohjelmistotasolla, kun konekoodi suoritetaan suoraan laitteistolla. Valitettavasti tämä tekee tulkeista hitaampia kuin haluttaisiin.
 
 Vuonna 2008 Google julkaisi uuden selaimen, Google Chromen, jonka oli tarkoitus parantaa verkkosovellusten käyttökokemusta~\cite{chromepress}. Googlen kiinnostus käyttökokemuksen ja ennen kaikkea suorituskyvyn parantamisesta on ymmärrettävää, sillä yhtiöllä on paljon verkkopalveluita, jotka hyötyvät hyvästä suorituskyvystä. Tästä syystä Google päätyi toteuttamaan Chrome-selaintaan varten oman virtuaalikoneen nimeltään V8.
 

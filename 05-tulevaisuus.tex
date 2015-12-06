@@ -1,3 +1,13 @@
 \section{Tulevaisuus}
 
-%https://blog.mozilla.org/javascript/2015/02/26/the-path-to-parallel-javascript/
+JavaScriptistä on tullut, jo kliseen omaisesti, Webin konekieli~\cite{webassembly}. JavaScriptiä suoritetaan käytännössä jokaisella alustalla ja kehittäjät ovat alkaneet tehdä kääntäjiä, jotka kääntävät muita ohjelmointikieliä, vanhoja tai uusia, JavaScriptiksi. Tämä lisää painetta parantaa virtuaalikoneiden suorituskykyä ja lisätä matalamman tason rajapintoja kääntäjäohjelmoijien hyödynnettäväksi.
+
+Asm.js~\cite{asmjs} on epävirallinen standardi osajoukosta JavaScriptiä, joka on mahdollista kääntää tehokkaaksi konekoodiksi. Sen idea on olla toimivaa JavaScriptia, mutta mahdollistaa tehokas kääntäminen konekoodiksi muun muassa tyyppivinkeillä. Esimerkiksi kokonaislukuparametri merkitään tekemällä funktion alussa bittitason operaatio: \texttt{myIntParam = myIntParam|0}, joka pakottaa muuttujan arvon kokonaisluvuksi. Myös V8-virtuaalikoneen kehittäjät suunnittelevat tukea asm.js-muotoisen koodin optimoinnille uuden TurboFan JIT-kääntäjän avulla.
+
+Asm.js:n tueksi JavaScriptiin on tuotu lisää suorituskykyä parantavia toimintoja, kuten \textit{SIMD-käskyt}. SIMD tulee sanoista \textit{Single Instruction Multiple Data}, joka tarkoittaa suomeksi: ''Yksi käsky, monta data-alkiota''. SIMD-käskyjen avulla pystyy hyödyntämään prosessorien mahdollisuutta käsitellä monta data-alkiota yhdellä konekäskyllä.
+
+Lisäksi suunnitteilla on parantaa tukea rinnakkaisohjelmoinnille. Kielessä on jo Web Worker -rajapinta, joka mahdollistaa ohjelman jakamisen rinnakkaisiin ''työläisiin''. Työläisten kommunikaatio tapahtuu viestinvälityksellä, joka on melko hidasta. Tämä vuoksi kieleen ollaan tuomassa \textit{SharedArrayBuffer}-rajapinta, eli jaettu taulukkopuskuri, ja atomiset operaatiot.
+
+Asm.js alkoi kokeellisena toteutuksena, mutta nyt selainvalmistajat ja standardoijat kehittävät yhdessä virallista ''Webin konekieltä'', jota he kutsuvat nimellä WebAssembly~\cite{webassembly}. Sen on tarkoitus tarjota matalan tason binääriformaatti, jota kääntäjät voivat tuottaa. WebAssembly on tiiviissä binäärimuodossa, joten sitä ei tarvitse purkaa, kuten pakattua JavaScript-koodia, eikä jäsentää uudelleen selaimessa. WebAssemblyn tavoite ei ole korvata JavaScript-koodia ja nykyistä kehitystapaa, vaan tarjota parempi tuki myös käännetyille ohjelmille, jotka aikaisemmin ovat toimineet epäturvallisina selainlaajennuksina.
+
+% SoundScript V8!!!
