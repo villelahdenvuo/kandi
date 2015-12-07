@@ -1,65 +1,38 @@
 \pagebreak
 \section{Toteutusten vertailua}
 
-Virtuaalikonetoteutukset ovat ottaneet käyttöön toistensa optimointimenetelmiä, mutta niiden kehittäjien erilaiset ajattelutavat ja perinteet ovat ohjanneet virtuaalikoneiden arkkitehtuureja ja käytäntöjä. Toteutuksista löytyy siis yhtäläisyyksiä sekä eroavaisuuksia, jotka vaikuttavat niiden suorituskykyyn, vaikka JavaScriptin toiminta on tarkasti määritelty. Vertailuun on valittu Googlen V8, Applen JavaScriptCore, Mozillan SpiderMonkey ja Microsoftin Chakra -virtuaalikoneet, koska niistä löytyy parhaiten tietoa paitsi Chakrasta. Se on toistaiseksi suljettua lähdekoodia, mutta silti mielenkiintoinen ja merkittävä käyttäjämäärällisesti. Microsoft on avaamassa sen lähdekoodin vuoden 2016 alussa~\cite{chakraopen}.
+Virtuaalikonetoteutukset ovat ottaneet käyttöön toistensa optimointimenetelmiä, mutta niiden kehittäjien erilaiset ajattelutavat ja perinteet ovat ohjanneet virtuaalikoneiden arkkitehtuureja ja käytäntöjä. Toteutuksista löytyy siis yhtäläisyyksiä sekä eroavaisuuksia, jotka vaikuttavat niiden suorituskykyyn, vaikka JavaScriptin toiminta onkin tarkasti määritelty. Vertailuun on valittu Googlen V8, Applen JavaScriptCore, Mozillan SpiderMonkey ja Microsoftin Chakra -virtuaalikoneet, koska niistä löytyy parhaiten tietoa paitsi Chakrasta. Se on toistaiseksi suljettua lähdekoodia, mutta silti mielenkiintoinen ja merkittävä käyttäjämäärällisesti. Microsoft on avaamassa sen lähdekoodin vuoden 2016 alussa~\cite{chakraopen}.
 
 \subsection{Suoritusarkkitehtuuri}
 
 Ensimmäinen kiinnostava tieto on, mitä virtuaalikone korkealla tasolla tekee koodille suorittaakseen sitä. Virtuaalikoneet eivät ole hylänneet tulkkejaan, vaikka niihin on lisätty JIT-kääntäjiä. Esimerkiksi JavaScriptCoren tulkki on kirjoitettu kokonaan uudelleen paljon edeltäjäänsä paremmaksi ja sille on annettu uusi nimi ''LLInt''~\cite{llint}. Ironista kyllä vaikka Google ei alunperin toteuttanut lainkaan tulkkia V8-virtuaalikoneeseensa, se on nyt kehittämässä tulkkia nimeltä ''Ignition''~\cite{v8ignition}. Uusi tulkki perustuu JavaScriptCoren LLInt-tulkkiin.
 
-Perustelut muutokselle ovat ymmärrettäviä, sillä uutta tulkkia aiotaan käyttää ainakin alkuun ensisijaisesti mobiililaitteissa, joissa on rajoitettu määrä muistia ja heikompi suoritusteho. Tällaisilla laitteilla kääntäminen konekoodiksi ennen suorittamista yksinkertaisesti liian hidasta, minkä takia halutaan nopeasti käynnistyvä tulkki. Lisäksi käännetty koodi vie enemmän muistia kuin tavukoodimuotoinen koodi.
+Perustelut muutokselle ovat ymmärrettäviä, sillä uutta tulkkia aiotaan käyttää ainakin alkuun ensisijaisesti mobiililaitteissa, joissa on rajoitettu määrä muistia ja heikompi suorituskyky. Tällaisilla laitteilla kääntäminen konekoodiksi ennen suorittamista on yksinkertaisesti liian hidasta, minkä takia halutaan nopeasti käynnistyvä tulkki. Lisäksi konekoodiksi käännetty koodi vie enemmän muistia kuin tavukoodimuotoinen koodi.
 
-Aikaisemmin V8 on pitänyt JavaScript-lähdekoodia parhaana esitysmuotona ohjelmalle ja siitä on aina jäsennetty abstrakti syntaksipuu joka kerta ennen kääntämistä. Uusi tavukoodimuoto voisi kuitenkin toimia myös parempana välikielenä kääntäjille ja alkuperäistä lähdekoodia ei tarvitsisi jäsentää uudelleen joka kerta.
+Aikaisemmin V8 on pitänyt JavaScript-lähdekoodia parhaana esitysmuotona ohjelmalle ja siitä on jäsennetty abstrakti syntaksipuu joka kerta ennen kääntämistä. Uusi tavukoodimuoto voisi kuitenkin toimia myös parempana välikielenä kääntäjille, jolloin alkuperäistä lähdekoodia ei tarvitsisi jäsentää uudelleen joka kerta.
 
-Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa. Uusimmassa Chakra-virtuaalikoneessa on optimoivan JIT-kääntäjän lisäksi yksinkertainen JIT-kääntäjä, joka ei tee monimutkaisia optimointeja mahdollistaen nopeamman käännöksen konekoodiksi~\cite{chakra}. Saatavilla olevien tietojen mukaan Chakra ei tue aktivaatiotietueiden manipulointia, joten optimoitu koodi otetaan käyttöön vasta kun funktiota kutsutaan uudestaan. Chakran kehittäjät ovat pyrkineet hyödyntämään laitteistoa mahdollisimman paljon rinnakkaistamalla käännös- ja roskienkeruuoperaatioita.
+Myös Chakra virtuaalikone käyttää tulkkia suorituksen alussa. Uusimmassa Chakra-virtuaalikoneessa on optimoivan JIT-kääntäjän lisäksi yksinkertainen JIT-kääntäjä, joka ei tee monimutkaisia optimointeja mahdollistaen nopeamman käännöksen konekoodiksi~\cite{chakra}. Saatavilla olevien tietojen mukaan Chakra ei tue aktivaatiotietueiden manipulointia, joten optimoitu koodi otetaan käyttöön vasta kun funktiota kutsutaan uudestaan. Chakran kehittäjät ovat pyrkineet hyödyntämään laitteistoa mahdollisimman paljon rinnakkaistamalla käännös- ja roskienkeruuoperaatioita. Myös V8-virtuaalikone suorittaa käännösprosessia rinnakkaisesti suorituksen kanssa.
 
-SpiderMonkeyn kehittäjät ovat olleet myös ahkeria ja virtuaalikone on nähnyt jo viisi erilaista JIT-kääntäjää: TraceMonkey, JägerMonkey, IonMonkey, OdinMonkey ja alkutilannekääntäjä (Baseline compiler)~\cite{monkeys}. Kaikki niistä ei ole enää käytössä, vaan osa on korvannut aikaisempia ja osa on siirtynyt eri vaiheeseen suorituksessa. Alkutilannekääntäjä on korvannut JägerMonkeyn, joka korvasi sitä edeltävän TraceMonkeyn.
+SpiderMonkeyn kehittäjät ovat olleet myös ahkeria ja virtuaalikone on nähnyt jo viisi erilaista JIT-kääntäjää: TraceMonkey, JägerMonkey, IonMonkey, OdinMonkey ja alkutilannekääntäjä (Baseline compiler)~\cite{monkeys}. Kaikki niistä ei ole enää käytössä, vaan osa on korvannut aikaisempia ja osa on siirtynyt eri vaiheeseen suorituksessa. Esimerkiksi alkutilannekääntäjä on korvannut JägerMonkeyn, joka korvasi sitä edeltävän TraceMonkeyn.
 
 SpiderMonkey käyttää yhä tulkkia suorituksen alussa, mutta pyrkii kääntämään koodin mahdollisimman nopeasti alkutilannekääntäjällään~\cite{baseline}, IonMonkey keskittyy erityisesti paljon kutsuttujen funktioiden kovakouraiseen optimointiin ja OdinMonkey-kääntäjää käytetään vain asm.js-muotoisen koodin kääntämiseen etukäteen. Asm.js:stä kerrotaan lisää Tulevaisuus-luvussa.
 
-SpiderMonkey ei ole ainut virtuaalikone, joka on tuottanut useita virtuaalikoneita. V8:n kehittäjät rakentavat uutta JIT-kääntäjää, jota he kutsuvat nimellä TurboFan~\cite{turbofan}. JavaScriptCoren kehittäjät valmistelevat FTL JIT -nimistä kääntäjää~\cite{ftljit}.
-
-\begin{comment}
-\begin{itemize}
-\item V8 - vain konekoodia - ei tulkkia, baseline, crankshaft(, turbofan) (TULKKI?!)
-\item V8: \textbf{JS} -> AST -> native/Hydrogen (ssa) IR
-%\item \url{https://docs.google.com/document/d/11T2CRex9hXxoJwbYqVQ32yIPMh0uouUZLdyrtmMoL44/edit#}
-\item JSC - LLInt tulkki, method jit, dfg jit, ftl jit
-\item JSC JS -> AST -> \textbf{tavukoodi} (IR) -> native
-\item SpiderMonkey - tulkki, traceMonkey, jägerMonkey, ionMonkey
-\item SpiderMonkey: JS -> AST -> tavukoodi -> native
-%\item \url{http://www.infoq.com/news/2011/05/ionmonkey}
-\item Chakra - tulkki, simple jit, full jit
-\item Chakra: JS -> AST -> \textbf{tavukoodi}
-%\item \url{https://channel9.msdn.com/Events/WebPlatformSummit/2015/Chakra-The-JavaScript-Engine-that-powers-Microsoft-Edge}
-\item SSA-muoto ja de-facto optimoinnit!
-\end{itemize}
-\end{comment}
-
-% https://wingolog.org/archives/2011/10/28/javascriptcore-the-webkit-js-implementation
-
-%To put that into perspective, in V8, the high-level intermediate representation is the JS source code itself. When V8 first sees a piece of code, it pre-parses it to raise early syntax errors. Later when it needs to analyze the source code, either for the full-codegen compiler or for Hydrogen, it re-parses it to an AST, and then works on the AST.
-
-%In contrast, in JSC, when code is first seen, it is fully parsed to an AST and then that AST is compiled to bytecode. After producing the bytecode, the source text isn't needed any more, and so it is forgotten. The interpreter interprets the bytecode directly. The simple method JIT compiles the bytecode directly. The DFG JIT has to re-parse the bytecode into an SSA-style IR before optimizing and producing native code, which is a bit more expensive but worth it for hot code.
+SpiderMonkey ei ole ainut virtuaalikone, joka on nähnyt useita virtuaalikoneita. V8:n kehittäjät rakentavat uutta JIT-kääntäjää, jota he kutsuvat nimellä TurboFan~\cite{turbofan}. Sen on tarkoitus korvata nykyinen optimoiva kääntäjä, Crankshaft, ja olla sitä helpommin jatkokehitettävä. Myös JavaScriptCoren kehittäjät valmistelevat FTL JIT -nimistä (Fourth Tier LLVM JIT) kääntäjää neljänneksi kääntäjäksi~\cite{ftljit}. Nimensäkin perusteella se hyödyntää LLVM kääntäjäinfrastruktuuria, jonka tarkoitus on helpottaa kääntäjien tekemistä tarjoamalla valmis rajapinta. Kääntäjän riittää tuottaa LLVM-yhteensopivaa välikieltä ja LLVM hoitaa sen optimoinnin ja kääntämisen konekoodiksi.
 
 \subsection{Tyyppien päättely}
 
-Kaikki vertailun virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää taustalla ja päättelevät tyyppejä suoritusaikana kerätyn tiedon perusteella. Konekoodista ei yksinkertaisesti saa nopeaa ilman tyyppispesifisiä käskyjä, koska ne ovat todella nopeita.
+Konekoodista ei yksinkertaisesti saa nopeaa, jos jokaisen operaation kohdalla pitää tarkistaa muuttujien tyypit, suorittaa erilaiset tyyppimuunnokset ja varmistaa kaikenlaiset poikkeustapaukset. Tämän takia kaikki vertailun virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää taustalla ja päättelevät muuttujien tyyppejä suoritusaikana kerätyn tiedon perusteella.
 
 V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin, jotka ovat osa generoitua konekoodia (eli suoritettavaa muistia)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna tyyppitietoa suoritettavan muistin sekaan.
 
-Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi aikaisemmin mainitut Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia, vaikka niillä on eri piiloluokat, koska niiden rakenne on tarpeeksi lähellä toisiaan.
+JIT-kääntäjät pystyvät sitten hyödyntämään tätä tyyppitietoa luodessaan optimoituja versioita funktioista. Mutta kuten sisällytetyn välimuistin luvussa mainittiin, täytyy silti varautua poikkeuksiin ja mahdollisesti vaihtaa optimoitu koodi takaisin epäoptimoituun versioon.
+
+Myös Chakra käyttää sisällytettyjä välimuisteja, mutta Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi aikaisemmin mainitut Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia, vaikka niillä on eri piiloluokat, koska niiden rakenne on tarpeeksi lähellä toisiaan eli tässä käyttötapauksessa ne ovat ekvivalentit tyypeiltään, koska molemmilla on ominaisuus \texttt{x} samassa siirtymässä.
 
 \begin{comment}
 \begin{itemize}
-\item V8 inline cache KOODISSA
-\item LLInt inlince cache MUISTISSA
-%Note that in order to tier directly to the optimizing compiler, you need type information. Building the LLInt with the DFG optimizer enabled causes the interpreter to be instrumented to record value profiles. These profiles record the types of values seen by instructions that load and store values from memory. Unlike V8, which stores this information in executable code as part of the inline caches, in the LLInt these value profiles are in non-executable memory.
 \item \url{https://wiki.mozilla.org/TypeInference}
 \item SpiderMonkey: Staattisen ja dynaamisen päättelyn yhdistelmä!
 \item \url{https://trac.webkit.org/wiki/JavaScriptCore#TypeInference}
-\item V8: hidden classes
-\item Chakra: kohta 12 min (Polymorphic inline caches (equivalent object type specilization))
-%https://channel9.msdn.com/Events/WebPlatformSummit/2015/Chakra-The-JavaScript-Engine-that-powers-Microsoft-Edge}
 \end{itemize}
 \end{comment}
