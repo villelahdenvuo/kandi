@@ -32,8 +32,6 @@ Syy, miksi luodaan useita piiloluokkia yhden olion luonnin yhteydessä on, että
 
 Wonsun Ahn kumppaneineen on tutkinut piiloluokkien hyötyjä ja haittoja todellisissa verkkosovelluksissa~\cite{Ahn2014}. Tutkimuksessa on löytynyt muutamia heikkouksia, jotka vähentävät piiloluokkien hyötyjä todellisissa sovelluksissa ja heikkouksiin ehdotetaan parannuksia. Siinä myös moititaan kehittäjien vahvaa oletusta ohjelmien staattisesta käytöksestä. Tutkimuksessa havaittiin, miten dynaamisuutta paljon hyödyntävä ohjelma voi helposti luoda paljon piiloluokkia turhaan esimerkiksi alustamalla ominaisuuksia eri järjestyksessä eri kerroilla tai ehdollisesti. Jos piiloluokkia on paljon se haittaa optimointien, kuten sisällytetyn välimuistin, toimivuutta.
 
-% TODO: Lisää ongelmista!
-
 \subsection{Sisällytetty välimuisti}
 
 \textit{Hakupaikaksi} (access site) kutsutaan kohtaa koodissa, jossa viitataan olion ominaisuuteen. Koska muuttujilla ei ole tyyppiä, virtuaalikone ei voi tietää ennalta löytyykö edes kyseistä ominaisuutta. Yleinen olettamus on, että samalla hakupaikalla oliot ovat usein samantyyppisiä. Tämän takia esimerkiksi V8:ssa on alettu käyttää \textit{sisällytettyä välimuistia} (inline cache)~\cite[s.~498]{Ahn2014}. Nimi tulee siitä, että välimuisti on osa generoitua konekoodia. Sen tehtävä on tarkistaa vastaan tulevien arvojen tyyppi ja tallentaa profilointitietoa optimoivaa kääntäjää varten. Sillä ei siis ole suoraan tekemistä prosessorin välimuistin kanssa.
@@ -44,7 +42,7 @@ function getX(obj) { return obj.x; }
 var p = new Piste(1, 2)
 for (var i = 0; i < 100000; i++) getX(p);
 \end{lstlisting}
-Keräämällä tietoa suoritusaikana virtuaalikone voi päätellä, että tässä hakupaikassa \texttt{obj} on usein Piste-olio. Virtuaalikone voi muokata konekoodia ja lisätä tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C2}?'' Jos oliolla on tämä piiloluokka, arvon lukemisen voi suorittaa yhdellä konekäskyllä, sillä ominaisuuden siirtymä muistissa on tunnettu piiloluokan rakenteesta. Sitä voisi kuvata esimerkiksi pseudokoodilla:
+Keräämällä tietoa suoritusaikana virtuaalikone voi päätellä, että hakupaikassa \texttt{obj.x} on \texttt{obj}-muuttujan arvona usein Piste-olio. Virtuaalikone voi muokata konekoodia ja lisätä tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C2}?'' Jos oliolla on tämä piiloluokka, arvon lukemisen voi suorittaa yhdellä konekäskyllä, sillä ominaisuuden siirtymä muistissa on tunnettu piiloluokan rakenteesta. Sitä voisi kuvata esimerkiksi pseudokoodilla:
 \begin{lstlisting}
 if (haePiiloluokka(obj) == 'C2') return obj[C2_X_OFFSET];
 else return teeHidasHaku(obj, 'x');
@@ -59,7 +57,7 @@ else if (haePiiloluokka(obj) == 'C3') return obj[C3_X_OFFSET];
 else return teeHidasHaku(obj, 'x');
 \end{lstlisting}
 
-Ylimääräiset tarkistukset tekevät suorituksesta tietenkin hitaampaa. Tutkimuksen mukaan suoritus välimuistin avulla voi olla parhaimmillaan monta kertaluokkaa nopeampaa kuin ilman välimuistia~\cite[s.~498]{Ahn2014}, joten tulokset tukevat sisällytetyn välimuistin käyttöä.
+Ylimääräiset tarkistukset tekevät suorituksesta tietenkin hitaampaa. Tutkimuksen mukaan haku välimuistin avulla voi olla parhaimmillaan monta kertaluokkaa nopeampaa kuin ilman välimuistia~\cite[s.~498]{Ahn2014}, koska silloin ei tarvitse tehdä hidasta hakua ominaisuuden nimellä.
 
 \subsection{Aktivaatiotietueiden manipulointi}
 
@@ -86,7 +84,7 @@ JavaScript-virtuaalikoneiden \textit{roskienkeruu} (garbage collection) on perin
 
 Ohjelman suoritus ei voi jatkua roskienkeruun aikana, koska ohjelma voi käyttää muistia milloin vain, ja koko muistialueen käsitteleminen on hidasta. Tämä on suuri ongelma varsinkin animaatioiden ja interaktiivisten sovellusten tapauksessa, sillä pitkä roskienkeruutauko haittaa käytettävyyttä ja saa sovelluksen tuntumaan hitaalta, vaikka muu suoritus olisikin todella nopeaa.
 
-Ongelman ratkaisemiseksi on kehitetty monenlaisia heuristiikkoja ja optimointeja. Automaattisesta muistinhallinnasta riittää materiaalia useampaankin tutkielmaan~\cite{gcbib}. Tässä on lista tärkeimpiä menetelmiä ja ideoita, joilla roskienkeruuta on parannettu:
+Ongelman ratkaisemiseksi on kehitetty monenlaisia heuristiikkoja ja optimointeja. Automaattisesta muistinhallinnasta riittää materiaalia useampaankin tutkielmaan~\cite{gcbib}. Tässä on lista joitain esimerkkejä menetelmistä, joilla roskienkeruuta on parannettu:
 
 % TODO: Viittaus periaatteeseen, eikä toteutukseen.
 

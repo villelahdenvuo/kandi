@@ -11,7 +11,7 @@ Yksi suurimmista virtuaalikoneiden hyödyistä on, että ohjelma tarvitsee kää
 
 \subsection{Perinteisen JavaScript-virtuaalikoneen anatomia}
 
-Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995. Nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey on kehittynyt paljon, mutta se koostuu yhä kolmesta fundamentaalisesta komponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}. Tämän arkkitehtuurin lisäksi on toteutettu myös muita menetelmiä suorituskyvyn parantamiseksi.
+Ensimmäisen JavaScript-virtuaalikoneen nimi on SpiderMonkey~\cite{spidermonkey}. Se toteutettiin Netscape-selainta varten vuonna 1995. Nykyään sitä ylläpitää Mozilla ja sitä käytetään muun muassa Mozillan Firefox-selaimessa. Nykyinen SpiderMonkey on kehittynyt paljon, mutta se koostuu yhä kolmesta perustavanlaatuisesta komponentista: \textit{kääntäjä}, \textit{tulkki} ja \textit{roskienkerääjä}~\cite{spidermonkeydesign}. Tämän arkkitehtuurin lisäksi on toteutettu myös muita menetelmiä suorituskyvyn parantamiseksi.
 
 SpiderMonkeyn kääntäjä huolehtii koodin \textit{jäsentämisestä} (parsing) ja kääntämisestä \textit{tavukoodimuotoiseksi}. Virtuaalikoneen tavukoodi on todellisen koneen konekoodin kaltaista, ja yksinkertaisista operaatioista muodostuvaa tavukoodia on helpompi suorittaa kuin alkuperäistä tekstimuotoista ohjelmakoodia. Jotkin virtuaalikoneet eivät käytä tavukoodiesitystä, vaan muodostavat koodista ainoastaan \textit{abstraktin syntaksipuun}. Abstrakti syntaksipuu on nimensä mukaisesti ohjelmakoodista muodostettu puumainen abstrakti esitystapa.
 
