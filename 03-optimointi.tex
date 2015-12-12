@@ -30,7 +30,7 @@ Kun Piste-oliolta pyydetään esimerkiksi ominaisuuden \texttt{x} arvoa, virtuaa
 
 Syy, miksi luodaan useita piiloluokkia yhden olion luonnin yhteydessä on, että niihin lisätyt siirtymätiedot mahdollistavat erilaisten olioiden luomisen käyttäen hyväksi jo luotuja piiloluokkia. Esimerkiksi \texttt{Ympyrä}-olio voi sisältää ominaisuudet \texttt{x}, \texttt{y} ja \texttt{r}, jolloin sen luomisessa käytetään piiloluokkia \texttt{C0}, \texttt{C1}, \texttt{C2} ja luodaan uusi \texttt{C3}. Vaihtoehtoisesti voimme luoda kolmiulotteisen Pisteen, jolla on tasokoordinaattien lisäksi \texttt{z}-ominaisuus. Tällöin piiloluokka \texttt{C2} sisältää tiedon siirtymästä molemmissa, ympyrän ja kolmiulotteisen pisteen, tapauksissa.
 
-Wonsun Ahn kumppaneineen on tutkinut piiloluokkien hyötyjä ja haittoja todellisissa verkkosovelluksissa~\cite{Ahn2014}. Tutkimuksessa on löytynyt muutamia heikkouksia, jotka vähentävät piiloluokkien hyötyjä todellisissa sovelluksissa ja heikkouksiin ehdotetaan parannuksia. Siinä myös moititaan kehittäjien vahvaa oletusta ohjelmien staattisesta käytöksestä. Tutkimuksessa havaittiin, miten dynaamisuutta paljon hyödyntävä ohjelma voi helposti luoda paljon piiloluokkia turhaan esimerkiksi alustamalla ominaisuuksia eri järjestyksessä eri kerroilla tai ehdollisesti. Jos piiloluokkia on paljon se haittaa optimointien, kuten sisällytetyn välimuistin, toimivuutta.
+Wonsun Ahn kumppaneineen on tutkinut piiloluokkien hyötyjä ja haittoja todellisissa sovelluksissa~\cite{Ahn2014}. Tutkimuksessa on löytynyt muutamia heikkouksia, jotka vähentävät piiloluokkien hyötyjä todellisissa sovelluksissa. Siinä myös moititaan vahvaa oletusta ohjelmien staattisesta käytöksestä. Tutkimuksessa havaittiin, miten dynaamisuutta paljon hyödyntävä ohjelma voi helposti luoda paljon piiloluokkia turhaan esimerkiksi alustamalla ominaisuuksia eri järjestyksessä eri kerroilla tai ehdollisesti. Jos piiloluokkia on paljon se haittaa esimerkiksi sisällytettyjen välimuistien toimintaa.
 
 \subsection{Sisällytetty välimuisti}
 
@@ -44,17 +44,17 @@ for (var i = 0; i < 100000; i++) getX(p);
 \end{lstlisting}
 Keräämällä tietoa suoritusaikana virtuaalikone voi päätellä, että hakupaikassa \texttt{obj.x} on \texttt{obj}-muuttujan arvona usein Piste-olio. Virtuaalikone voi muokata konekoodia ja lisätä tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C2}?'' Jos oliolla on tämä piiloluokka, arvon lukemisen voi suorittaa yhdellä konekäskyllä, sillä ominaisuuden siirtymä muistissa on tunnettu piiloluokan rakenteesta. Sitä voisi kuvata esimerkiksi pseudokoodilla:
 \begin{lstlisting}
-if (haePiiloluokka(obj) == 'C2') return obj[C2_X_OFFSET];
-else return teeHidasHaku(obj, 'x');
+if (getHiddenClass(obj) == 'C2') return obj[C2_X_OFFSET];
+else return slowPropertySearch(obj, 'x');
 \end{lstlisting}
 
 V8:ssa on kolmen tyyppisiä sisällytettyjä välimuisteja: \textit{lataukselle} (load), \textit{talletukselle} (store) ja \textit{kutsumiselle} (call). Lataaminen tarkoittaa olion ominaisuuden hakemista ja talletus sen päivittämistä. Kutsuminen tarkoittaa olioon liitetyn funktion kutsumista ja se on samankaltainen lataamisen kanssa, sillä ensin pitää ladata funktio, joka on JavaScriptissä viittaus funktio-olioon.
 
 Jos olion tyyppiä ei löydy sisällytetystä välimuistista, V8 voi lisätä tarkistuksen sisällytettyyn välimuistiin. Esimerkiksi, jos ohjelma alkaa kutsua \texttt{getX}-funktiota ympyräolioilla, V8 voi lisätä sisällytettyyn välimuistiin tarkistuksen: ''Onko \texttt{obj}:n piiloluokka \texttt{C3}?''. Tällöin arvon voi ladata taas nopeasti tunnetusta siirtymästä pseudokoodilla:
 \begin{lstlisting}
-if (haePiiloluokka(obj) == 'C2') return obj[C2_X_OFFSET];
-else if (haePiiloluokka(obj) == 'C3') return obj[C3_X_OFFSET];
-else return teeHidasHaku(obj, 'x');
+if (getHiddenClass(obj) == 'C2') return obj[C2_X_OFFSET];
+else if (getHiddenClass(obj) == 'C3') return obj[C3_X_OFFSET];
+else return slowPropertySearch(obj, 'x');
 \end{lstlisting}
 
 Ylimääräiset tarkistukset tekevät suorituksesta tietenkin hitaampaa. Tutkimuksen mukaan haku välimuistin avulla voi olla parhaimmillaan monta kertaluokkaa nopeampaa kuin ilman välimuistia~\cite[s.~498]{Ahn2014}, koska silloin ei tarvitse tehdä hidasta hakua ominaisuuden nimellä.
