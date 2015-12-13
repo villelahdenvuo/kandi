@@ -20,11 +20,11 @@ SpiderMonkey ei ole ainoa virtuaalikone, joka on nähnyt useita virtuaalikoneita
 
 \subsection{Tyyppien päättely}
 
-Konekoodista ei yksinkertaisesti saa nopeaa, jos jokaisen operaation kohdalla pitää tarkistaa muuttujien tyypit, suorittaa erilaiset tyyppimuunnokset ja varmistaa kaikenlaiset poikkeustapaukset. Tämän takia kaikki vertailun virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää, kuten piiloluokkia, taustalla ja päättelevät muuttujien tyyppejä suoritusaikana kerätyn tiedon perusteella.
+Konekoodista ei yksinkertaisesti saa nopeaa, jos jokaisen operaation kohdalla pitää tarkistaa muuttujien tyypit, suorittaa erilaiset tyyppimuunnokset ja varmistaa kaikenlaiset poikkeustapaukset. Tämän takia kaikki vertaillut virtuaalikoneet käyttävät jonkinlaista tyyppijärjestelmää, kuten piiloluokkia, taustalla ja päättelevät muuttujien tyyppejä suoritusaikana kerätyn tiedon perusteella.
 
-V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin, jotka ovat osa generoitua konekoodia (eli suoritettavaa muistia)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna tyyppitietoa suoritettavan muistin sekaan.
+V8-virtuaalikoneen tapauksessa kerätty tyyppitieto tallennetaan sisällytettyihin välimuisteihin, jotka ovat osa generoitua konekoodia (eli suoritettavaa muistia)~\cite{llint}. JavaScriptCoren LLInt-tulkki kerää myös tyyppitietoa sisällytetyillä välimuisteilla, mutta se ei tallenna tyyppitietoa suoritettavan muistin joukkoon.
 
-JIT-kääntäjät pystyvät sitten hyödyntämään tätä tyyppitietoa luodessaan optimoituja versioita funktioista. Mutta kuten sisällytetyn välimuistin luvussa mainittiin, täytyy silti varautua poikkeuksiin ja mahdollisesti vaihtaa optimoitu koodi takaisin epäoptimoituun versioon.
+JIT-kääntäjät pystyvät sitten hyödyntämään tätä tyyppitietoa luodessaan optimoituja versioita funktioista. Mutta kuten Aktivaatiotietueiden manipulointi -luvussa mainittiin, täytyy silti varautua poikkeuksiin ja mahdollisesti vaihtaa optimoitu koodi takaisin epäoptimoituun versioon.
 
 Chakran kehittäjät ovat vieneet optimoinnin askelta pidemmälle. Chakra samastaa tyyppejä niin sanotulla ''equivalent object type specilization''-menetelmällä~\cite{chakra}. Menetelmän avulla esimerkiksi aikaisemmin mainitut Piste- ja Ympyräoliot pystyvät käyttämään samaa sisällytettyä välimuistia funktion \texttt{getX} hakupaikassa, vaikka niillä on eri piiloluokat. Se onnistuu, koska niiden rakenne on tarpeeksi lähellä toisiaan. Esimerkin tapauksessa ne ovat ekvivalentit tyypeiltään, koska molemmilla on ominaisuus \texttt{x} samassa siirtymässä.
 
