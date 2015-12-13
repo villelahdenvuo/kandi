@@ -32,6 +32,11 @@
 \usepackage{amsfonts,amsmath,amssymb,amsthm,booktabs,color,enumitem,graphicx}
 \usepackage[pdftex,hidelinks]{hyperref}
 \usepackage{verbatim}
+\usepackage{ragged2e}
+
+% Use section based figure numbering.
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
 
 \usepackage{listings}
 \usepackage{color}
@@ -184,6 +189,7 @@
 \bibliographystyle{babplain-lf}
 %\bibliographystyle{babalpha-lf}
 \pagebreak
+\RaggedRight % Disable justifying, because it looks horrible with long links.
 \bibliography{references}
 
 
